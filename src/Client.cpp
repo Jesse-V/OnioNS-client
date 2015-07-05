@@ -1,12 +1,15 @@
 
 #include "Client.hpp"
 #include "tcp/IPC.hpp"
+#include "onions-common/Common.hpp"
+#include "onions-common/Constants.hpp"
+#include "onions-common/utils.hpp"
 #include <iostream>
 
 
 Client::Client()
 {
-  socks_ = SocksClient::getCircuitTo(Env::get().getMirrorIP());
+  socks_ = SocksClient::getCircuitTo("129.123.7.8");
   if (!socks_)
     throw std::runtime_error("Unable to connect!");
 }
@@ -14,7 +17,7 @@ Client::Client()
 
 void Client::listenForDomains()
 {
-  IPC ipc(Env::IPC_PORT);
+  IPC ipc(Const::IPC_PORT);
   ipc.start();
 }
 

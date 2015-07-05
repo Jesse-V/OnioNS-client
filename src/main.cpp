@@ -1,13 +1,7 @@
 
-
-#include "Flags.hpp"
-#include "common/Environment.hpp"
-#include "client/Client.hpp"
-#include "hs/HS.hpp"
-#include "mirror/Mirror.hpp"
+#include "onions-common/Flags.hpp"
+#include "Client.hpp"
 #include <botan/botan.h>
-#include <fstream>
-#include <iostream>
 
 Botan::LibraryInitializer init("thread_safe");
 

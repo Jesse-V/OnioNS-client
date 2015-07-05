@@ -2,6 +2,7 @@
 #ifndef IPC_SESSION_HPP
 #define IPC_SESSION_HPP
 
+#include "onions-common/tcp/HandleAlloc.hpp"
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include <boost/enable_shared_from_this.hpp>

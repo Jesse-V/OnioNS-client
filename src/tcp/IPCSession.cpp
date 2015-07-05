@@ -1,6 +1,7 @@
 
 #include "IPCSession.hpp"
 #include "../Client.hpp"
+#include "onions-common/tcp/MemAllocator.hpp"
 #include <boost/bind.hpp>
 #include <algorithm>
 #include <fstream>

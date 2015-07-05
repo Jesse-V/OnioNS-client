@@ -1,6 +1,14 @@
-tor-onions-client (0.3.1.1~trusty) trusty; urgency=medium
+tor-onions-client (0.3.2.2~trusty) trusty; urgency=medium
+
+  * Initial build against onions-common library.
+  * Fixed compilation against onions-common headers.
+
+ -- Jesse Victors <kernelcorn@riseup.net> Thur, 5 July 2015 14:25:00 -0400
+
+tor-onions-client (0.3.1.2~trusty) trusty; urgency=medium
 
   * Initial build of client-side functionality.
   * Removed debugging symbols.
+  * Fixed build dependencies.
 
  -- Jesse Victors <kernelcorn@riseup.net> Thur, 1 July 2015 22:45:00 -0400

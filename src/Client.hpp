@@ -2,7 +2,7 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include "tcp/SocksClient.hpp"
+#include "onions-common/tcp/SocksClient.hpp"
 #include <unordered_map>
 #include <memory>
 #include <string>
