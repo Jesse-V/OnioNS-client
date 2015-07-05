@@ -1,9 +1,9 @@
-tor-onions-client (0.3.2.2~trusty) trusty; urgency=medium
+tor-onions-client (0.3.2.4~trusty) trusty; urgency=medium
 
   * Initial build against onions-common library.
   * Fixed compilation against onions-common headers.
 
- -- Jesse Victors <kernelcorn@riseup.net> Thur, 5 July 2015 14:25:00 -0400
+ -- Jesse Victors <kernelcorn@riseup.net>  Sun, 5 July 2015 14:31:00 -0400
 
 tor-onions-client (0.3.1.2~trusty) trusty; urgency=medium
 
