@@ -49,20 +49,27 @@ Please see the [Releases section](https://github.com/Jesse-V/OnioNS/releases) at
 
 The ClangBuild.sh script is available if you prefer the Clang compiler. This script is recommended if you are developing or hacking OnioNS. You will need to run **sudo apt-get install clang-format-3.6** before running the script as the script will also re-style your code to the official development style, which is based on Chromium.
 
+### Initialization
+
+I strongly recommend that you follow the below procedures to integrate the software into the Tor Browser. This will make it extremely easy to access .tor domains, and I have made the software with the Tor Browser in mind. It is usually not necessary to do this process more than once.
+
+> 1. Open a terminal and navigate to where you have extracted the Tor Browser. For example, on my machine this is */home/jesse/tor-browser_en-US*. You should see a "Tor Browser" executable and a directory named "Browser".
+> 2. **mv Browser/TorBrowser/Tor/tor Browser/TorBrowser/Tor/torbin**
+> 3. **ln -s /usr/bin/onions-tbb Browser/TorBrowser/Tor/tor**
+
+This allows the Tor Browser to start the OnioNS software in addition to Tor.
+
 ### Usage
 
+The Tor Browser operates as before, but the OnioNS software running in the background allows the Tor Browser to load hidden services under a .tor domain name.
+
 > 1. Open the Tor Browser.
-> 2. Open two terminals, A and B.
-> 3. In Terminal A, run **onions --client --mirror=129.123.7.8**
-> 4. In Terminal B, run **python /var/lib/tor-onions/client.py**
-> 5. Type "example.tor" into the Tor Browser.
-> 6. In a moment, you should arrive at a hidden service.
-> 7. Close the Tor Browser.
-> 8. Control-C the processes in both terminals.
+> 2. Type "example.tor" into the Tor Browser.
+> 3. In a moment, you should arrive at the project's hidden service.
 
 ### Getting Help
 
-A manpage is available for your convenience. You can also type **onions --help** for a list of flags and usage examples. Contact me on IRC or by email (see below) if you need further assistance.
+A manpage is available for your convenience. You can also type **onions-client --help** for a list of flags and usage examples. Contact me on IRC or by email (see below) if you need further assistance.
 
 ### Bug Reporting
 

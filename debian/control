@@ -11,9 +11,8 @@ Vcs-Browser: https://github.com/Jesse-V/OnioNS-client
 
 Package: tor-onions-client
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-stem (>= 1.1)
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-stem (>= 1.1), tor-onions-common (>= 0.3.3)
 Conflicts: tor-onions-client
-Replaces: libscrypt-dev, libscrypt0
 Description: Tor-powered distributed DNS for Tor hidden services
  The Onion Name System (OnioNS) is a privacy-enhanced, distributed, and highly
  usable DNS for Tor hidden services. It allows users to reference a hidden
