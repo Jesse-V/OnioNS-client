@@ -107,12 +107,12 @@ int main(int argc, char* argv[])
 
   // start the onions-client executable
   std::cout << "Launching OnioNS client software..." << std::endl;
-  startProcess(getOnionsClientProcess());  // launch onions-client
+  pid_t ocP = startProcess(getOnionsClientProcess());  // launch onions-client
 
   // wait until onions-client has established a connection
   while (!isOpen(9053))
   {
-    if (waitpid(torP, NULL, WNOHANG) != 0)
+    if (waitpid(torP, NULL, WNOHANG) != 0 || waitpid(ocP, NULL, WNOHANG) != 0)
       return EXIT_FAILURE;
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }

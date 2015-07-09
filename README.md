@@ -57,7 +57,7 @@ I strongly recommend that you follow the below procedures to integrate the softw
 > 2. **mv Browser/TorBrowser/Tor/tor Browser/TorBrowser/Tor/torbin**
 > 3. **ln -s /usr/bin/onions-tbb Browser/TorBrowser/Tor/tor**
 
-This allows the Tor Browser to start the OnioNS software in addition to Tor.
+This replaces the normal Tor binary with my binary, which then launches the original Tor binary and then the OnioNS software as child processes. This allows the OnioNS software to start when the Tor Browser starts.
 
 ### Usage
 
@@ -66,6 +66,10 @@ The Tor Browser operates as before, but the OnioNS software running in the backg
 > 1. Open the Tor Browser.
 > 2. Type "example.tor" into the Tor Browser.
 > 3. In a moment, you should arrive at the project's hidden service.
+
+### Troubleshooting
+
+If at startup the Tor Browser immediately throws a message saying "Something Went Wrong! Tor is not working in this browser." it most likely means that the OnioNS software was unable to connect to the network. This is a fatal situation, so the software aborts and the Tor Browser throws this message. Since this occurs after Tor starts, the issue is most likely not on your end. Please contact me (see below) for assistance.
 
 ### Getting Help
 
