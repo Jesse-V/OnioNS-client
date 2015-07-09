@@ -61,7 +61,7 @@ def resolveOnioNS(controller, stream):
   ipc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
   try:
-    ipc.connect(('localhost', 9053))
+    ipc.connect(('127.0.0.1', 9053))
     ipc.send(stream.target_address)
     dest = ipc.recv(64) # OnioNS returns an invalid hostname on fail
     ipc.close()
