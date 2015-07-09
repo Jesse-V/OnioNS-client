@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 
   // launch the Stem script
   std::cout << "Launching OnioNS-TBB software..." << std::endl;
-  startProcess(getStemProcess());  // launch Stem script
+  startProcess(getStemProcess());
 
   wait(&torP);  // wait for Tor to exit
 }

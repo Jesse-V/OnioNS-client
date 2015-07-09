@@ -53,11 +53,11 @@ The ClangBuild.sh script is available if you prefer the Clang compiler. This scr
 
 I strongly recommend that you follow the below procedures to integrate the software into the Tor Browser. This will make it extremely easy to access .tor domains, and I have made the software with the Tor Browser in mind. It is usually not necessary to do this process more than once.
 
-> 1. Open a terminal and navigate to where you have extracted the Tor Browser. For example, on my machine this is */home/jesse/tor-browser_en-US*. You should see a "Tor Browser" executable and a directory named "Browser".
+> 1. Open a terminal and navigate to where you have extracted the Tor Browser. For example, on my machine this is *~/tor-browser_en-US* but you may have placed it somewhere else. You should see a "Tor Browser" executable and a directory named "Browser".
 > 2. **mv Browser/TorBrowser/Tor/tor Browser/TorBrowser/Tor/torbin**
 > 3. **ln -s /usr/bin/onions-tbb Browser/TorBrowser/Tor/tor**
 
-This replaces the normal Tor binary with my binary, which then launches the original Tor binary and then the OnioNS software as child processes. This allows the OnioNS software to start when the Tor Browser starts.
+This replaces the normal Tor binary with a executable that launches the original Tor binary and then the OnioNS software as child processes, allowing the OnioNS software to start when the Tor Browser starts. This initialization is locale-independent, so all locales of the Tor Browser are supported.
 
 ### Usage
 
@@ -71,10 +71,12 @@ The Tor Browser operates as before, but the OnioNS software running in the backg
 
 If at startup the Tor Browser immediately throws a message saying "Something Went Wrong! Tor is not working in this browser." it most likely means that the OnioNS software was unable to connect to the network. This is a fatal situation, so the software aborts and the Tor Browser throws this message. Since this occurs after Tor starts, the issue is most likely not on your end. Please contact me (see below) for assistance.
 
+If you are unable to load "example.tor", it's possible that either the hidden service is down or that the OnioNS software is not running properly on your end. To test this, visit "onions55e7yam27n.onion". If the site loads, you could try restarting the Tor Browser, which may clear the issue. If the site still does not load, please contact me for further assistance.
+
 ### Getting Help
 
-A manpage is available for your convenience. You can also type **onions-client --help** for a list of flags and usage examples. Contact me on IRC or by email (see below) if you need further assistance.
+If you have installed the software and then initialized the Tor Browser (again, a one-time operation) the software should work as intended. However, if something went wrong and you need assistance, please contact kernelcorn on #tor-dev on OFTC IRC, or email kernelcorn at riseup dot net (PGP key 0xC20BEC80). If you would like to report a bug or file an enhancement request, please [open a ticket on Github](https://github.com/Jesse-V/OnioNS-client/issues) or contact me over IRC or email if you do not have a Github account.
 
-### Bug Reporting
+### How to Contribute
 
-Please open a ticket on Github. If you do not have a Github account, please contact kernelcorn on #tor-dev on OFTC IRC, or email kernelcorn at riseup dot net. Please follow the same process for filing enhancement requests. I use PGP key 0xC20BEC80. I accept pull requests if you want to contribute.
+Most of all, I need more testers to verify that the software is stable and reliable. If you find an issue, please report it on Github. I also need inspections: of the network using Wireshark or similar tools to verify that there are no leaks, and of the code by examining the code for corner-cases or situations that I may have missed. If are a developer, I gladly accept pull requests.
