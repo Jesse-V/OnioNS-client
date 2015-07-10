@@ -45,6 +45,7 @@ I strongly recommend that you follow the below procedures to integrate the softw
 > 1. Open a terminal and navigate to where you have extracted the Tor Browser. For example, on my machine this is *~/tor-browser_en-US* but you may have placed it somewhere else. You should see a "Tor Browser" executable and a directory named "Browser".
 > 2. **mv Browser/TorBrowser/Tor/tor Browser/TorBrowser/Tor/torbin**
 > 3. **ln -s /usr/bin/onions-tbb Browser/TorBrowser/Tor/tor**
+> 4. **mkdir -p Browser/TorBrowser/OnioNS**
 
 This replaces the normal Tor binary with a executable that launches the original Tor binary and then the OnioNS software as child processes, allowing the OnioNS software to start when the Tor Browser starts. This initialization is locale-independent, so all locales of the Tor Browser are supported.
 

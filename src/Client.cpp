@@ -2,14 +2,17 @@
 #include "Client.hpp"
 #include "tcp/IPC.hpp"
 #include <onions-common/Common.hpp>
+#include <onions-common/Config.hpp>
 #include <onions-common/Constants.hpp>
-#include <onions-common/utils.hpp>
+#include <onions-common/Utils.hpp>
 #include <iostream>
 
 
 Client::Client()
 {
-  socks_ = SocksClient::getCircuitTo("129.123.7.8");
+  auto addr = Config::getMirror()[0];
+  socks_ =
+      SocksClient::getCircuitTo(addr["ip"].asString(), addr["port"].asInt());
   if (!socks_)
     throw std::runtime_error("Unable to connect!");
 }
@@ -45,8 +48,8 @@ std::string Client::resolve(const std::string& torDomain)
         else
           std::cout << "Received Record response." << std::endl;
 
-        auto dest = Common::get().getDestination(
-            Common::get().parseRecord(received["response"].asString()), domain);
+        auto dest = Common::getDestination(
+            Common::parseRecord(received["response"].asString()), domain);
 
         cache_[domain] = dest;
         domain = dest;
