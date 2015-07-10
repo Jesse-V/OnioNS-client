@@ -1,2 +1,3 @@
-debian/extra_includes/onions
 debian/extra_includes/client.py
+debian/extra_includes/onions-client
+debian/extra_includes/onions-client.1.gz
