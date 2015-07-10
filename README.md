@@ -9,7 +9,7 @@ This repository provides the client-side functionality and the integration with 
 
 ### Supported Systems
 
-Please see the [OnioNS-common README](https://github.com/Jesse-V/OnioNS-common#Supported-Systems) for more information.
+Please see the [OnioNS-common README](https://github.com/Jesse-V/OnioNS-common#supported-systems) for more information.
 
 ### Installation
 
