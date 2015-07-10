@@ -1,19 +1,21 @@
-.\" Manpage for OnioNS-Client
-.\" Visit github.com/Jesse-V/OnioNS-client to report bugs, errors, or typos.
-.TH man 1 "July 9, 2015" "<VERSION>" "OnioNS-Client man page"
+.TH man 1 "July 10, 2015" "<VERSION>" "OnioNS-Client manual"
 
-.SH NAME
-
+.SH "NAME"
+.sp
 The Onion Name System (OnioNS) \- Tor-powered Distributed DNS for Tor Hidden
 Services \- Client Edition
 
 .SH SYNOPSIS
-
+.sp
 onions-client\fR [\fB--help\fR|\fB--license\fR]
+.sp
+OnioNS-Client is currently designed to integrate into the Tor Browser. Support
+for other applications is coming soon. It is currently not necessary to run
+this binary manually from the command-line.
 
 .SH DESCRIPTION
-
-Tor a third-generation onion router that acts as anonymizing communication
+.sp
+Tor is a third-generation onion router that acts as anonymizing communication
 service. Users choose a path through a set of three Tor nodes and negotiate a
 "virtual circuit" through the network, in which each node knows its predecessor
 and successor, but no others. Tor also supports hidden services: anonymous
@@ -22,27 +24,36 @@ Traditionally, hidden services have major usability issues because their
 addresses are algorithmically generated. OnioNS allows clients to access hidden
 services by a meaningful, globally-unique domain name chosen by the hidden
 service operator.
-
+.sp
 This package provides the capability to query the OnioNS network for a domain
 name and load a hidden service under a meaningful name in the Tor Browser.
 
-.SH OPTIONS
+.SH "COMMAND-LINE OPTIONS"
 
-OnioNS-Client is currently designed to integrate into the Tor Browser. Support
-for other applications is coming soon. It is currently not necessary to run
-this binary manually from the command-line.
+.PP
+\fB-?\fR, \fB--help\fR
+.RS 4
+Prints a list of flags, their descriptions, and then exits.
+.RE
 
-\fB -h \fR or \fB --help \fR
-  Prints list of flags and usage examples and then quits.
+.PP
+\fB-l\fR, \fB--license\fR
+.RS 4
+Prints license information and then exits.
+.RE
 
-\fB -l \fR or \fB --license \fR
-  Prints license information and then quit.
+.PP
+\fB --usage \fR
+.RS 4
+Displays a brief usage message and then exits.
+.RE
 
-.\"  .SH SEE ALSO
-  tor(1)
+.SH "SEE ALSO"
+.sp
+\fBtor\fR(1)
 
 .SH BUGS
-
+.sp
 Please visit https://github.com/Jesse-V/OnioNS-client/issues for the list
 of known bugs or to open a ticket on a new bug. If you do not have a Github
 account, please contact kernelcorn on #tor-dev on OFTC IRC, or email
@@ -50,5 +61,6 @@ kernelcorn at riseup dot net. Please follow the same process for filing
 enhancement requests.
 
 .SH AUTHOR
+.sp
+Jesse Victors [kernelcorn at riseup\&.net, PGP 0xC20BEC80]
 
-Jesse Victors (kernelcorn@riseup.net, PGP 0xC20BEC80)
