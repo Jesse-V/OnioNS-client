@@ -9,19 +9,7 @@ This repository provides the client-side functionality and the integration with 
 
 ### Supported Systems
 
-#### Linux
-
-**Ubuntu 14.04+, Debian 8+, or Linux Mint 17+**
-
-i386, amd64, and armhf architectures are supported, so it should run on most 32-bit, 64-bit, and ARM machines. If you have an ARM board (Pi, BBB, Odroid, etc) feel free to test it. A graphical interface is currently required, as you must also run the Tor Browser.
-
-#### Windows
-
-Not currently supported at the moment, but currently planned.
-
-#### OS-X and *BSD
-
-Not currently supported, support planned in the far future. I am willing to provide upstream support to anyone who wishes to port the software over there. I have not attempted to compile this code on any BSD system. My current primary focus is developing the Linux edition.
+Please see the [OnioNS-common README](https://github.com/Jesse-V/OnioNS-common#Supported-Systems) for more information.
 
 ### Installation
 
@@ -37,17 +25,18 @@ This is the recommended method as it's very easy to stay up-to-date with my rele
 
 * **Install from .deb file**
 
-Please see the [Releases section](https://github.com/Jesse-V/OnioNS/releases) at the top of this Github repo. I provide amd64 .deb builds there, which should work for you. Otherwise, you may also download them from [my PPA](https://launchpad.net/~jvictors/+archive/tor-dev/+packages).
+I provide amd64 .deb builds in the [Releases section](https://github.com/Jesse-V/OnioNS/releases), which should work for you. For other architectures, you may download from [my PPA](https://launchpad.net/~jvictors/+archive/tor-dev/+packages).
 
 * **Install from source**
 
-> 1. Download the latest .zip or .tar.gz archive from the Releases page and unzip it.
-> 2. **sudo apt-get install python-stem g++ cmake make**
-> 3. **./build.sh**
-> 4. **cd build/**
-> 5. **sudo make install**
+> 1. Follow [the instructions in the OnioNS-common repository](https://github.com/Jesse-V/OnioNS-common#installation) to install the tor-onions-common package.
+> 2. Download the latest .zip or .tar.gz archive from the Releases page and unzip it.
+> 3. Debian/Ubuntu/Mint: **sudo apt-get install python-stem** Fedora: **yum install python-stem**
+> 4. **./build.sh**
+> 5. **cd build/**
+> 6. **sudo make install**
 
-The ClangBuild.sh script is available if you prefer the Clang compiler. This script is recommended if you are developing or hacking OnioNS. You will need to run **sudo apt-get install clang-format-3.6** before running the script as the script will also re-style your code to the official development style, which is based on Chromium.
+The ClangBuild.sh script is available if you prefer the Clang compiler. This script is recommended if you are developing or hacking OnioNS. You will need to install *clang-format-3.6* before running that as ClangBuild.sh will also re-style your code to the official development style, which is based on Chromium.
 
 ### Initialization
 
