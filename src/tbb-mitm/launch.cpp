@@ -25,7 +25,9 @@ char** getOnionsClientProcess()
 {
   const char** args = new const char* [2];
   args[0] = "onions-client\0";
-  args[1] = NULL;
+  args[1] = "--output\0";
+  args[2] = "Browser/TorBrowser/OnioNS/client.log\0";
+  args[3] = NULL;
   return const_cast<char**>(args);
 }
 
