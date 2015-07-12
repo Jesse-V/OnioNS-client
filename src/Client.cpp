@@ -2,20 +2,21 @@
 #include "Client.hpp"
 #include "tcp/IPC.hpp"
 #include <onions-common/Common.hpp>
+#include <onions-common/Log.hpp>
 #include <onions-common/Config.hpp>
 #include <onions-common/Constants.hpp>
 #include <onions-common/Utils.hpp>
-#include <iostream>
 
 
 Client::Client()
 {
   auto addr = Config::getMirror()[0];
-  socks_ =
-      SocksClient::getCircuitTo(addr["ip"].asString(), addr["port"].asInt());
+  socks_ = SocksClient::getCircuitTo(addr["ip"].asString(),
+                                     addr["port"].asInt(), 9150);
   if (!socks_)
-    throw std::runtime_error("Unable to connect!");
+    Log::get().error("Unable to connect!");
 }
+
 
 
 void Client::listenForDomains()
@@ -38,15 +39,16 @@ std::string Client::resolve(const std::string& torDomain)
       auto iterator = cache_.find(domain);
       if (iterator == cache_.end())
       {
-        std::cout << "Sending \"" << domain << "\" to name server...\n";
+        Log::get().notice("Sending \"" + domain + "\" to name server...");
+
         auto received = socks_->sendReceive("domainQuery", domain);
         if (received.isMember("error"))
         {
-          std::cerr << "Err: " << received["error"].asString() << std::endl;
+          Log::get().warn(received["error"].asString());
           return "<Response_Error>";
         }
         else
-          std::cout << "Received Record response." << std::endl;
+          Log::get().notice("Received Record response.");
 
         auto dest = Common::getDestination(
             Common::parseRecord(received["response"].asString()), domain);
@@ -60,7 +62,7 @@ std::string Client::resolve(const std::string& torDomain)
 
     if (domain.length() != 22 || !Utils::strEndsWith(domain, ".onion"))
     {
-      std::cerr << "Err: \"" + domain + "\" is not a HS address!" << std::endl;
+      Log::get().warn("\"" + domain + "\" is not a HS address!");
       return "<Invalid_Result>";
     }
 
@@ -68,7 +70,7 @@ std::string Client::resolve(const std::string& torDomain)
   }
   catch (std::runtime_error& re)
   {
-    std::cerr << "Err: " << re.what() << std::endl;
+    Log::get().error(re.what());
   }
 
   return "<General_Error>";
