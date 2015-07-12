@@ -45,7 +45,7 @@ Prints license information and then exits.
 .PP
 \fB-o\fR, \fB--output\fR
 .RS 4
-Specifies a filepath for event logging. If "-" is given (the default), output will go to stdout.
+Specifies a filepath for event logging. If not specified or if "-" is given as an argument, output will go to stdout.
 .RE
 
 .PP
