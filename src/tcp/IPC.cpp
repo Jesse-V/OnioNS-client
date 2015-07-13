@@ -1,5 +1,6 @@
 
 #include "IPC.hpp"
+#include <onions-common/Log.hpp>
 #include <boost/bind.hpp>
 
 using boost::asio::ip::tcp;
@@ -12,8 +13,8 @@ IPC::IPC(ushort port)
           tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"),
                         port))
 {
-  std::cout << "Initiating Tor-OnioNS IPC socket..." << std::endl;
-  std::shared_ptr<IPCSession> session(new IPCSession(*ios_));
+  Log::get().notice("Initiating Stem-OnioNS IPC socket...");
+  boost::shared_ptr<IPCSession> session(new IPCSession(*ios_));
   acceptor_.async_accept(session->getSocket(),
                          boost::bind(&IPC::handleAccept, this, session,
                                      boost::asio::placeholders::error));
@@ -23,7 +24,7 @@ IPC::IPC(ushort port)
 
 IPC::~IPC()
 {
-  std::cout << "Stopping IPC socket..." << std::endl;
+  Log::get().notice("Stopping IPC socket...");
   acceptor_.cancel();
 }
 
@@ -31,16 +32,16 @@ IPC::~IPC()
 
 void IPC::start()
 {
-  std::cout << "Starting IPC socket..." << std::endl;
+  Log::get().notice("Starting IPC socket...");
   ios_->run();
 }
 
 
 
-void IPC::handleAccept(std::shared_ptr<IPCSession> session,
+void IPC::handleAccept(boost::shared_ptr<IPCSession> session,
                        const boost::system::error_code& error)
 {
-  std::cout << "IPC connection accepted." << std::endl;
+  Log::get().notice("IPC connection accepted.");
   if (error)
   {
     std::cerr << error.message() << std::endl;

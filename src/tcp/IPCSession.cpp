@@ -1,7 +1,9 @@
 
 #include "IPCSession.hpp"
 #include "../Client.hpp"
+#include <onions-common/Log.hpp>
 #include <onions-common/tcp/MemAllocator.hpp>
+#include <onions-common/Utils.hpp>
 #include <boost/bind.hpp>
 #include <algorithm>
 #include <fstream>
@@ -39,14 +41,14 @@ void IPCSession::processRead(const boost::system::error_code& error, size_t n)
 {
   if (error || n <= 0)
   {
-    std::cerr << "IPC: " << error.message() << std::endl;
+    Log::get().warn("IPC processRead: " + error.message());
     return;
   }
 
   std::string domainIn(buffer_.begin(), buffer_.begin() + n);
-  std::cout << "Read \"" << domainIn << "\" from Tor Browser." << std::endl;
+  Log::get().notice("Read \"" + domainIn + "\" from Tor Browser.");
   std::string onionOut = Client::get().resolve(domainIn);
-  std::cout << "Writing \"" << onionOut << "\" to Tor Browser... ";
+  Log::get().notice("Writing \"" + onionOut + "\" to Tor Browser... ");
 
   for (std::size_t j = 0; j < onionOut.size(); j++)
     buffer_[j] = onionOut[j];
@@ -60,11 +62,11 @@ void IPCSession::processWrite(const boost::system::error_code& error)
 {
   if (error)
   {
-    std::cerr << error.message() << std::endl;
+    Log::get().warn("IPC processWrite: " + error.message());
     return;
   }
 
-  std::cout << " write complete. \n";
+  Log::get().notice("Write complete.");
   asyncReadBuffer();
 }
 
