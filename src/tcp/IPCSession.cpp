@@ -41,11 +41,12 @@ void IPCSession::processRead(const boost::system::error_code& error, size_t n)
 {
   if (error || n <= 0)
   {
-    Log::get().warn("IPC processRead: " + error.message());
+    Log::get().warn("IPC " + error.message());
     return;
   }
 
   std::string domainIn(buffer_.begin(), buffer_.begin() + n);
+  domainIn = Utils::trimString(domainIn);
   Log::get().notice("Read \"" + domainIn + "\" from Tor Browser.");
   std::string onionOut = Client::get().resolve(domainIn);
   Log::get().notice("Writing \"" + onionOut + "\" to Tor Browser... ");
