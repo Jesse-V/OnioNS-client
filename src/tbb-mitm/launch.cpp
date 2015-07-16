@@ -115,13 +115,24 @@ int main(int argc, char* argv[])
   while (!isOpen(9053))
   {
     if (waitpid(torP, NULL, WNOHANG) != 0 || waitpid(ocP, NULL, WNOHANG) != 0)
+    {
+      // kill children
+      kill(torP, SIGQUIT);
+      kill(ocP, SIGQUIT);
+
       return EXIT_FAILURE;
+    }
+
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 
   // launch the Stem script
   std::cout << "Launching OnioNS-TBB software..." << std::endl;
-  startProcess(getStemProcess());
+  pid_t stemP = startProcess(getStemProcess());
 
   wait(&torP);  // wait for Tor to exit
+
+  // kill children
+  kill(ocP, SIGQUIT);
+  kill(stemP, SIGQUIT);
 }
