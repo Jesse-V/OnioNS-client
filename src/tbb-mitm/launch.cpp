@@ -23,7 +23,7 @@ char** getStemProcess()
 // get commmand for launching the onions-client executable
 char** getOnionsClientProcess()
 {
-  const char** args = new const char* [2];
+  const char** args = new const char* [4];
   args[0] = "onions-client\0";
   args[1] = "--output\0";
   args[2] = "TorBrowser/OnioNS/client.log\0";
