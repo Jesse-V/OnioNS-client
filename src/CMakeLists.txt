@@ -30,8 +30,8 @@ include_directories(/usr/include/onions-common/include /usr/include/botan-1.10)
 target_link_libraries(onions-client onions-common onions-jsoncpp onions-cyoencode popt botan-1.10  pthread ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_LIBRARIES})
 
 #installation of files
-set(DEB_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/debian/extra_includes")
-install(TARGETS onions-client            DESTINATION /usr/bin/)
-install(FILES ${DEB_FOLDER}/client.py    DESTINATION /var/lib/tor-onions/)
+set(ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+install(TARGETS onions-client               DESTINATION /usr/bin/)
+install(FILES ${ASSETS}/client.py           DESTINATION /var/lib/tor-onions/)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/onions-tbb DESTINATION /usr/bin/ PERMISSIONS WORLD_READ WORLD_EXECUTE GROUP_READ GROUP_EXECUTE OWNER_READ OWNER_WRITE OWNER_EXECUTE)
-install(FILES ${DEB_FOLDER}/onions-client.1.gz  DESTINATION /usr/share/man/man1)
+install(FILES ${ASSETS}/onions-client.1.gz  DESTINATION /usr/share/man/man1)
