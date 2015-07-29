@@ -41,7 +41,7 @@ void IPCSession::processRead(const boost::system::error_code& error, size_t n)
 {
   if (n == 0)
   {
-    Log::get().warn("IPC received empty message.");
+    Log::get().warn("IPC connection terminated.");
     return;
   }
   else if (error)
