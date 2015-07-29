@@ -39,9 +39,14 @@ void IPCSession::start()
 
 void IPCSession::processRead(const boost::system::error_code& error, size_t n)
 {
-  if (error || n <= 0)
+  if (n == 0)
   {
-    Log::get().warn("IPC " + error.message());
+    Log::get().warn("IPC received empty message.");
+    return;
+  }
+  else if (error)
+  {
+    Log::get().warn("IPC: " + error.message());
     return;
   }
 
