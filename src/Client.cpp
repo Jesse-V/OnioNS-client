@@ -11,8 +11,8 @@
 Client::Client()
 {
   auto addr = Config::getMirror()[0];
-  socks_ = SocksClient::getCircuitTo(addr["ip"].asString(),
-                                     addr["port"].asInt(), 9150);
+  socks_ = SocksClient::getCircuitTo(
+      addr["ip"].asString(), static_cast<short>(addr["port"].asInt()), 9150);
   if (!socks_)
     Log::get().error("Unable to connect!");
 }

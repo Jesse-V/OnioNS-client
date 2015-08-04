@@ -16,7 +16,7 @@ class Client
     return instance;
   }
 
-  void listenForDomains();
+  static void listenForDomains();
   std::string resolve(const std::string&);
 
  private:
