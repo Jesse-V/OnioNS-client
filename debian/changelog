@@ -1,3 +1,13 @@
+tor-onions-client (0.4.0.0~trusty) trusty; urgency=medium
+
+  * Minor increase in log diagnostics for IPC communication.
+  * Standardized the build process.
+  * Improved git commit styles to match common standard.
+  * Clarified README.
+  * Many bug fixes.
+
+ -- Jesse Victors <kernelcorn@riseup.net>  Tues, 04 Aug 2015 09:00:00 -0800
+
 tor-onions-client (0.3.2.6~trusty) trusty; urgency=medium
 
   * Fixed missing dependency on tor-onions-common.
