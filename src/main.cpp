@@ -31,7 +31,6 @@ int main(int argc, char** argv)
                             POPT_AUTOHELP{NULL, 0, 0, NULL, 0, NULL, NULL}};
 
   if (!Utils::parse(
-          argc,
           poptGetContext(NULL, argc, const_cast<const char**>(argv), po, 0)))
   {
     std::cout << "Failed to parse command-line arguments. Aborting.\n";

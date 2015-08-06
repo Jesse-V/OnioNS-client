@@ -1,4 +1,10 @@
-tor-onions-client (0.4.0.0~trusty) trusty; urgency=medium
+tor-onions-client (0.4.1.0~trusty) trusty; urgency=medium
+
+  * Fixed compiler error related to popt argument parsing.
+
+ -- Jesse Victors <kernelcorn@riseup.net>  Thur, 06 Aug 2015 13:00:00 -0800
+
+tor-onions-client (0.4.0.2~trusty) trusty; urgency=medium
 
   * Minor increase in log diagnostics for IPC communication.
   * Standardized the build process.
