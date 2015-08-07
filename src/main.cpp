@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     return EXIT_SUCCESS;
   }
 
-  if (logPath && strcmp(logPath, "-") == 0)
+  if (logPath && strcmp(logPath, "-") != 0)
     Log::setLogPath(std::string(logPath));
 
   Client::get().listenForDomains(port);
