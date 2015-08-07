@@ -1,9 +1,68 @@
 
 #include "ProcessWatch.hpp"
+#include <chrono>
+#include <thread>
+#include <fstream>
 #include <iostream>
+#include <sys/wait.h>
 #include <string.h>
 #include <netdb.h>
-#include <fstream>
+
+
+pid_t ProcessWatch::launchTor(char* argv[])
+{
+  std::cout << "Launching Tor..." << std::endl;
+  argv[0] = const_cast<char*>("TorBrowser/Tor/torbin");
+  pid_t torP = startProcess(argv);
+
+  // wait for Tor's control port to be available
+  while (!isOpen(9151))
+  {
+    // https://stackoverflow.com/questions/5278582
+    if (waitpid(torP, NULL, WNOHANG) != 0)  // test for existence of Tor
+      exit(0);  // if the Tor Browser was closed, then quit
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  }
+
+  return torP;
+}
+
+
+
+pid_t ProcessWatch::launchOnioNS(pid_t torP)
+{
+  // start the onions-client executable
+  std::cout << "Launching OnioNS client software..." << std::endl;
+  pid_t ocP =
+      ProcessWatch::startProcess(ProcessWatch::getOnionsClientProcess());
+
+  // wait until onions-client has established a connection
+  while (!ProcessWatch::isOpen(9053))
+  {
+    if (waitpid(torP, NULL, WNOHANG) != 0 || waitpid(ocP, NULL, WNOHANG) != 0)
+    {
+      // kill children
+      kill(torP, SIGQUIT);
+      kill(ocP, SIGQUIT);
+
+      return EXIT_FAILURE;
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  }
+
+  return ocP;
+}
+
+
+
+pid_t ProcessWatch::launchStem()
+{
+  // launch the Stem script
+  std::cout << "Launching OnioNS-TBB software..." << std::endl;
+  return ProcessWatch::startProcess(ProcessWatch::getStemProcess());
+}
+
 
 
 // start a child process based on the given commands
