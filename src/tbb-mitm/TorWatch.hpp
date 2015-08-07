@@ -9,6 +9,7 @@
 class TorWatch
 {
  public:
+  static void waitForTorDeath(pid_t torP);
   static void waitForTorSOCKS();
   static void authenticateToTor(boost::asio::ip::tcp::socket&);
   static void waitUntilBootstrapped(boost::asio::ip::tcp::socket&);

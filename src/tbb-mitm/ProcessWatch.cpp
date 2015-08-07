@@ -21,7 +21,7 @@ pid_t ProcessWatch::launchTor(char* argv[])
     // https://stackoverflow.com/questions/5278582
     if (waitpid(torP, NULL, WNOHANG) != 0)  // test for existence of Tor
       exit(0);  // if the Tor Browser was closed, then quit
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
   }
 
   return torP;
@@ -48,7 +48,7 @@ pid_t ProcessWatch::launchOnioNS(pid_t torP)
       return EXIT_FAILURE;
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
   }
 
   return ocP;
@@ -140,7 +140,7 @@ char** ProcessWatch::getOnionsClientProcess()
 {
   const char** args = new const char* [4];
   args[0] = "onions-client\0";
-  args[1] = "--output\0";
+  args[1] = "-o\0";
   args[2] = "TorBrowser/OnioNS/client.log\0";
   args[3] = NULL;
   return const_cast<char**>(args);
