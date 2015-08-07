@@ -12,6 +12,13 @@ import time
 
 # start of application
 def main():
+
+  print 'Opening log file, further output will be there.'
+
+  # redirect output to file, https://stackoverflow.com/questions/7152762
+  f = file('TorBrowser/OnioNS/stem.log', 'w')
+  sys.stdout = f
+
   try:
     # open main controller
     controller = Controller.from_port(port = 9151)
@@ -24,11 +31,13 @@ def main():
   })
 
   print 'Successfully connected to the Tor Browser.'
+  sys.stdout.flush()
 
   event_handler = functools.partial(handle_event, controller)
   controller.add_event_listener(event_handler, EventType.STREAM)
 
   print 'Now monitoring stream connections.'
+  sys.stdout.flush()
 
   try:
     time.sleep(60 * 60 * 24 * 365) #basically, wait indefinitely
@@ -40,6 +49,7 @@ def main():
 # handle a stream event
 def handle_event(controller, stream):
   print '[debug] ' + str(stream)
+  sys.stdout.flush()
 
   p = re.compile('.*\.tor$', re.IGNORECASE)
   if p.match(stream.target_address) is not None: # if .tor, send to OnioNS
@@ -55,6 +65,7 @@ def handle_event(controller, stream):
 # resolve via OnioNS a stream's destination
 def resolveOnioNS(controller, stream):
   print '[notice] Detected OnioNS domain!'
+  sys.stdout.flush()
 
   # send to OnioNS and wait for resolution
   # https://docs.python.org/2/howto/sockets.html
@@ -73,6 +84,7 @@ def resolveOnioNS(controller, stream):
 
   r=str(controller.msg('REDIRECTSTREAM ' + stream.id + ' ' + dest))
   print '[notice] Rewrote ' + stream.target_address + ' to ' + dest + ', ' + r
+  sys.stdout.flush()
 
   attachStream(controller, stream)
 
@@ -90,6 +102,8 @@ def attachStream(controller, stream):
     print '[warn] Stream attachment: invalid request. Dropping. '   + ir.message
   except stem.OperationFailed, of:
     print '[warn] Stream attachment: operation failed. Dropping. ' + of.message
+
+  sys.stdout.flush()
 
 
 if __name__ == '__main__':

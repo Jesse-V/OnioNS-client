@@ -1,9 +1,10 @@
 
 #include "ProcessWatch.hpp"
+#include <onions-common/Log.hpp>
 #include <chrono>
 #include <thread>
 #include <fstream>
-#include <iostream>
+#include <string>
 #include <sys/wait.h>
 #include <string.h>
 #include <netdb.h>
@@ -11,7 +12,7 @@
 
 pid_t ProcessWatch::launchTor(char* argv[])
 {
-  std::cout << "Launching Tor..." << std::endl;
+  Log::get().notice("Launching Tor...");
   argv[0] = const_cast<char*>("TorBrowser/Tor/torbin");
   pid_t torP = startProcess(argv);
 
@@ -24,6 +25,8 @@ pid_t ProcessWatch::launchTor(char* argv[])
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
   }
 
+  Log::get().notice("Tor's control port is now available.");
+
   return torP;
 }
 
@@ -32,7 +35,7 @@ pid_t ProcessWatch::launchTor(char* argv[])
 pid_t ProcessWatch::launchOnioNS(pid_t torP)
 {
   // start the onions-client executable
-  std::cout << "Launching OnioNS client software..." << std::endl;
+  Log::get().notice("Launching OnioNS client software...");
   pid_t ocP =
       ProcessWatch::startProcess(ProcessWatch::getOnionsClientProcess());
 
@@ -51,6 +54,8 @@ pid_t ProcessWatch::launchOnioNS(pid_t torP)
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
   }
 
+  Log::get().notice("onions-client IPC port is now available.");
+
   return ocP;
 }
 
@@ -59,7 +64,7 @@ pid_t ProcessWatch::launchOnioNS(pid_t torP)
 pid_t ProcessWatch::launchStem()
 {
   // launch the Stem script
-  std::cout << "Launching OnioNS-TBB software..." << std::endl;
+  Log::get().notice("Launching OnioNS-TBB software...");
   return ProcessWatch::startProcess(ProcessWatch::getStemProcess());
 }
 
@@ -73,14 +78,15 @@ pid_t ProcessWatch::startProcess(char** args)
   switch (pid)
   {
     case -1:
-      std::cerr << "Uh-Oh! fork() failed.\n";
+      Log::get().warn("Uh-Oh! fork() failed.");
       exit(1);
     case 0:                   // Child process
       execvp(args[0], args);  // Execute the program
-      std::cerr << "Failed to execute process!\n";
+      Log::get().warn("Failed to execute process!");
       exit(1);
     default: /* Parent process */
-      std::cout << "Process \"" << args[0] << "\" created, pid " << pid << "\n";
+      Log::get().warn("Process \"" + std::string(args[0]) + "\" created, pid " +
+                      std::to_string(pid));
       // wait(&pid);
       return pid;
   }
@@ -92,18 +98,17 @@ pid_t ProcessWatch::startProcess(char** args)
 bool ProcessWatch::isOpen(int port)
 {  // https://theredblacktree.wordpress.com/2013/09/30/how-to-check-if-a-port-is-open-or-not-in-c-unixlinux/
 
-  std::cout << "Testing..." << std::endl;
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
   if (sockfd < 0)
   {
-    std::cerr << "Error opening socket!" << std::endl;
+    Log::get().warn("Error opening socket!");
     return false;
   }
 
   struct hostent* server = gethostbyname("127.0.0.1");
   if (server == NULL)
   {
-    std::cerr << "ERROR, no such host" << std::endl;
+    Log::get().warn("ERROR, no such host");
     return false;
   }
 
@@ -117,7 +122,6 @@ bool ProcessWatch::isOpen(int port)
   bool isOpen = connect(sockfd, reinterpret_cast<struct sockaddr*>(&serv_addr),
                         sizeof(serv_addr)) >= 0;
   close(sockfd);
-  std::cout << "Result: " << isOpen << std::endl;
   return isOpen;
 }
 
