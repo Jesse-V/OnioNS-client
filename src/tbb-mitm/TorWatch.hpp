@@ -10,9 +10,11 @@ class TorWatch
 {
  public:
   static void waitForTorSOCKS();
-  static void authenticateToTor(boost::asio::ip::tcp::socket& socket);
-  static void waitUntilBootstrapped(boost::asio::ip::tcp::socket& socket);
-  static std::string getCookieHash();
+  static void authenticateToTor(boost::asio::ip::tcp::socket&);
+  static void waitUntilBootstrapped(boost::asio::ip::tcp::socket&);
+  static std::string getCookieHash(const std::string&);
+  static std::string getCookiePath(boost::asio::ip::tcp::socket&);
+  static std::string toString(boost::asio::streambuf&);
 };
 
 #endif
