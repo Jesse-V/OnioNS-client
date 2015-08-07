@@ -50,11 +50,12 @@ void IPCSession::processRead(const boost::system::error_code& error, size_t n)
     return;
   }
 
+  // Client is a singleton because of this code. Todo: reorganize
   std::string domainIn(buffer_.begin(), buffer_.begin() + n);
   domainIn = Utils::trimString(domainIn);
-  Log::get().notice("Read \"" + domainIn + "\" from Tor Browser.");
+  Log::get().notice("Read \"" + domainIn + "\" from IPC.");
   std::string onionOut = Client::get().resolve(domainIn);
-  Log::get().notice("Writing \"" + onionOut + "\" to Tor Browser... ");
+  Log::get().notice("Writing \"" + onionOut + "\" to IPC... ");
 
   for (std::size_t j = 0; j < onionOut.size(); j++)
     buffer_[j] = onionOut[j];

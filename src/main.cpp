@@ -11,24 +11,31 @@ int main(int argc, char** argv)
 {
   char* logPath = NULL;
   bool license = false;
+  ushort port = 9150;
 
-  struct poptOption po[] = {{
-                             "output",
-                             'o',
-                             POPT_ARG_STRING,
-                             &logPath,
-                             11001,
-                             "Specifies the filepath for event logging.",
-                             "<path>",
-                            },
-                            {"license",
-                             'L',
-                             POPT_ARG_NONE,
-                             &license,
-                             11002,
-                             "Print software license and exit.",
-                             NULL},
-                            POPT_AUTOHELP{NULL, 0, 0, NULL, 0, NULL, NULL}};
+  struct poptOption po[] = {
+      {"output",
+       'o',
+       POPT_ARG_STRING,
+       &logPath,
+       0,
+       "Specifies the filepath for event logging.",
+       "<path>"},
+      {"port",
+       'p',
+       POPT_ARG_SHORT,
+       &port,
+       0,
+       "SOCKS port to use for Tor communication. The default is 9150.",
+       "<port>"},
+      {"license",
+       'L',
+       POPT_ARG_NONE,
+       &license,
+       0,
+       "Print software license and exit.",
+       NULL},
+      POPT_AUTOHELP{NULL, 0, 0, NULL, 0, NULL, NULL}};
 
   if (!Utils::parse(
           poptGetContext(NULL, argc, const_cast<const char**>(argv), po, 0)))
@@ -46,7 +53,7 @@ int main(int argc, char** argv)
   if (logPath && strcmp(logPath, "-") == 0)
     Log::setLogPath(std::string(logPath));
 
-  Client::listenForDomains();
+  Client::get().listenForDomains(port);
 
   return EXIT_SUCCESS;
 }

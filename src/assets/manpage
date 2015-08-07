@@ -49,6 +49,12 @@ Specifies a filepath for event logging. If not specified or if "-" is given as a
 .RE
 
 .PP
+\fB-p\fR, \fB--port\fR
+.RS 4
+Specifies the SOCKS port used by Tor. This will be used to anonymize lookups. The default value is 9150, which is used by the Tor Browser. System-wide Tor installations typically use 9050.
+.RE
+
+.PP
 \fB --usage \fR
 .RS 4
 Displays a brief usage message and then exits.

@@ -8,19 +8,16 @@
 #include <onions-common/Utils.hpp>
 
 
-Client::Client()
+
+void Client::listenForDomains(ushort socksPort)
 {
   auto addr = Config::getMirror()[0];
-  socks_ = SocksClient::getCircuitTo(
-      addr["ip"].asString(), static_cast<short>(addr["port"].asInt()), 9150);
+  socks_ = SocksClient::getCircuitTo(addr["ip"].asString(),
+                                     static_cast<short>(addr["port"].asInt()),
+                                     socksPort);
   if (!socks_)
     Log::get().error("Unable to connect!");
-}
 
-
-
-void Client::listenForDomains()
-{
   IPC ipc(Const::IPC_PORT);
   ipc.start();
 }
