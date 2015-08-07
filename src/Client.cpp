@@ -42,16 +42,15 @@ std::string Client::resolve(const std::string& torDomain)
         Log::get().notice("Sending \"" + domain + "\" to name server...");
 
         auto received = socks_->sendReceive("domainQuery", domain);
-        if (received.isMember("error"))
+        if (received["type"] == "error")
         {
-          Log::get().warn(received["error"].asString());
+          Log::get().warn(received["value"].asString());
           return "<Response_Error>";
         }
-        else
-          Log::get().notice("Received Record response.");
 
+        Log::get().notice("Received Record response.");
         auto dest = Common::getDestination(
-            Common::parseRecord(received["response"].asString()), domain);
+            Common::parseRecord(received["value"].asString()), domain);
 
         cache_[domain] = dest;
         domain = dest;
