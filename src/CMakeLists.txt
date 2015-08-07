@@ -20,14 +20,17 @@ add_executable(onions-client
 )
 
 add_executable(onions-tbb
-  tbb-mitm/launch.cpp
+  tbb-mitm/TorWatch.cpp
+  tbb-mitm/ProcessWatch.cpp
 )
 
 add_dependencies(onions-client onions-tbb)
 
 include_directories(/usr/include/onions-common/include /usr/include/botan-1.10)
 
-target_link_libraries(onions-client onions-common onions-jsoncpp onions-cyoencode popt botan-1.10  pthread ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(onions-client onions-common onions-jsoncpp onions-cyoencode popt botan-1.10 pthread ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_LIBRARIES})
+
+target_link_libraries(onions-tbb botan-1.10 pthread ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_LIBRARIES})
 
 #installation of files
 set(ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets")

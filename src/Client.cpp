@@ -41,8 +41,8 @@ std::string Client::resolve(const std::string& torDomain)
         auto received = socks_->sendReceive("domainQuery", domain);
         if (received["type"] == "error")
         {
-          Log::get().warn(received["value"].asString());
-          return "<Response_Error>";
+          Log::get().warn("Server response: " + received["value"].asString());
+          return received["value"].asString();
         }
 
         Log::get().notice("Received Record response.");
