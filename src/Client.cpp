@@ -42,7 +42,7 @@ std::string Client::resolve(const std::string& torDomain)
         if (received["type"] == "error")
         {
           Log::get().warn("Server response: " + received["value"].asString());
-          return received["value"].asString();
+          return "<404>";
         }
 
         Log::get().notice("Received Record response.");
