@@ -47,11 +47,14 @@ void TorWatch::waitForTorDeath(pid_t p)
     }
 
     if (WIFEXITED(status))
-      Log::get().notice("Tor exited, status= " + WEXITSTATUS(status));
+      Log::get().notice("Tor exited, status= " +
+                        std::to_string(WEXITSTATUS(status)));
     else if (WIFSIGNALED(status))
-      Log::get().notice("Tor killed by signal " + WTERMSIG(status));
+      Log::get().notice("Tor killed by signal " +
+                        std::to_string(WTERMSIG(status)));
     else if (WIFSTOPPED(status))
-      Log::get().notice("Tor stopped by signal " + WSTOPSIG(status));
+      Log::get().notice("Tor stopped by signal " +
+                        std::to_string(WSTOPSIG(status)));
     else if (WIFCONTINUED(status))
       Log::get().notice("Tor continued");
   } while (!WIFEXITED(status) && !WIFSIGNALED(status));

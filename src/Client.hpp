@@ -16,11 +16,11 @@ class Client
     return instance;
   }
 
-  void listenForDomains(ushort);
+  void listenForDomains(short);
   std::string resolve(const std::string&);
 
  private:
-  Client(){};
+  Client() {}
   Client(Client const&) = delete;
   void operator=(Client const&) = delete;
   bool connectToResolver();

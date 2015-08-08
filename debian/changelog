@@ -1,3 +1,15 @@
+tor-onions-client (0.5.0.0~trusty) trusty; urgency=medium
+
+  * Reduced most compiler and static analysis warnings.
+  * Added popt-dev as a missing dependency.
+  * Updated network protocol.
+  * Added flag to specify a custom Tor SOCKS port.
+  * Fixed integration with the latest Tor Browser. (#16)
+  * Fixed logging when integrated with the Tor Browser. (#17)
+  * Fixed zombie processes remaining after Tor Browser closes. (#13)
+
+ -- Jesse Victors <kernelcorn@riseup.net>  Fri, 07 Aug 2015 16:00:00 -0800
+
 tor-onions-client (0.4.1.0~trusty) trusty; urgency=medium
 
   * Fixed compiler error related to popt argument parsing.

@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 {
   char* logPath = NULL;
   bool license = false;
-  ushort port = 9150;
+  short port = 9150;
 
   struct poptOption po[] = {
       {"output",

@@ -9,7 +9,7 @@
 
 
 
-void Client::listenForDomains(ushort socksPort)
+void Client::listenForDomains(short socksPort)
 {
   auto addr = Config::getMirror()[0];
   socks_ = SocksClient::getCircuitTo(addr["ip"].asString(),
