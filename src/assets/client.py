@@ -8,7 +8,7 @@ from socket import error as socket_error
 import socket, functools, re, sys
 from threading import Thread
 
-import time
+import time, datetime
 
 # start of application
 def main():
@@ -18,6 +18,9 @@ def main():
   # redirect output to file, https://stackoverflow.com/questions/7152762
   f = file('TorBrowser/OnioNS/stem.log', 'w')
   sys.stdout = f
+
+  # get current time of day
+  now = datetime.datetime.now()
 
   try:
     # open main controller
@@ -30,13 +33,13 @@ def main():
     '__LeaveStreamsUnattached': '1'
   })
 
-  print 'Successfully connected to the Tor Browser.'
+  print '[%d:%d | notice] Successfully connected to the Tor Browser.' % now.minute, now.second
   sys.stdout.flush()
 
   event_handler = functools.partial(handle_event, controller)
   controller.add_event_listener(event_handler, EventType.STREAM)
 
-  print 'Now monitoring stream connections.'
+  print '[%d:%d | debug ] Now monitoring stream connections.' % now.minute, now.second
   sys.stdout.flush()
 
   try:
@@ -48,9 +51,6 @@ def main():
 
 # handle a stream event
 def handle_event(controller, stream):
-  print '[debug] ' + str(stream)
-  sys.stdout.flush()
-
   p = re.compile('.*\.tor$', re.IGNORECASE)
   if p.match(stream.target_address) is not None: # if .tor, send to OnioNS
     t = Thread(target=resolveOnioNS, args=[controller, stream])
@@ -64,7 +64,9 @@ def handle_event(controller, stream):
 
 # resolve via OnioNS a stream's destination
 def resolveOnioNS(controller, stream):
-  print '[notice] Detected OnioNS domain!'
+  now = datetime.datetime.now()
+
+  print '[%d:%d | notice] Detected OnioNS domain!' % now.minute, now.second
   sys.stdout.flush()
 
   # send to OnioNS and wait for resolution
@@ -79,7 +81,9 @@ def resolveOnioNS(controller, stream):
   except socket_error as serr:
     if serr.errno != errno.ECONNREFUSED:
       raise serr
-    print '[err] OnioNS client is not running!'
+
+    now = datetime.datetime.now()
+    print '[%d:%d | warn  ] OnioNS client is not running!' % now.minute, now.second
     dest = '<IPC_FAIL>'
 
   r=str(controller.msg('REDIRECTSTREAM ' + stream.id + ' ' + dest))
@@ -92,16 +96,12 @@ def resolveOnioNS(controller, stream):
 
 # attach the stream to some circuit
 def attachStream(controller, stream):
-  print '[debug] Attaching request for ' + stream.target_address + ' to circuit'
+# print '[debug] Attaching request for ' + stream.target_address + ' to circuit'
 
   try:
     controller.attach_stream(stream.id, 0)
   except stem.UnsatisfiableRequest:
     pass
-  except stem.InvalidRequest, ir:
-    print '[warn] Stream attachment: invalid request. Dropping. '   + ir.message
-  except stem.OperationFailed, of:
-    print '[warn] Stream attachment: operation failed. Dropping. ' + of.message
 
   sys.stdout.flush()
 
