@@ -33,13 +33,13 @@ def main():
     '__LeaveStreamsUnattached': '1'
   })
 
-  print '[%d:%d | notice] Successfully connected to the Tor Browser.' % now.minute, now.second
+  print '[%d:%d | notice] Successfully connected to the Tor Browser.' % (now.minute, now.second)
   sys.stdout.flush()
 
   event_handler = functools.partial(handle_event, controller)
   controller.add_event_listener(event_handler, EventType.STREAM)
 
-  print '[%d:%d | debug ] Now monitoring stream connections.' % now.minute, now.second
+  print '[%d:%d | debug ] Now monitoring stream connections.' % (now.minute, now.second)
   sys.stdout.flush()
 
   try:
@@ -66,7 +66,7 @@ def handle_event(controller, stream):
 def resolveOnioNS(controller, stream):
   now = datetime.datetime.now()
 
-  print '[%d:%d | notice] Detected OnioNS domain!' % now.minute, now.second
+  print '[%d:%d | notice] Detected OnioNS domain!' % (now.minute, now.second)
   sys.stdout.flush()
 
   # send to OnioNS and wait for resolution
@@ -83,7 +83,7 @@ def resolveOnioNS(controller, stream):
       raise serr
 
     now = datetime.datetime.now()
-    print '[%d:%d | warn  ] OnioNS client is not running!' % now.minute, now.second
+    print '[%d:%d | warn  ] OnioNS client is not running!' % (now.minute, now.second)
     dest = '<IPC_FAIL>'
 
   r=str(controller.msg('REDIRECTSTREAM ' + stream.id + ' ' + dest))

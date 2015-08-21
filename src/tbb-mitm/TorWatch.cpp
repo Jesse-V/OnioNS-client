@@ -20,15 +20,15 @@ int main(int argc, char* argv[])
   Log::setLogPath("TorBrowser/OnioNS/launch.log");
 
   pid_t torP = ProcessWatch::launchTor(argv);
-  TorWatch::waitForTorSOCKS();
+  TorWatch::prepareTor();
   pid_t ocP = ProcessWatch::launchOnioNS(torP);
   pid_t stemP = ProcessWatch::launchStem();
 
   TorWatch::waitForTorDeath(torP);
 
   // kill children
-  kill(ocP, SIGQUIT);
-  kill(stemP, SIGQUIT);
+  kill(ocP, SIGTERM);
+  kill(stemP, SIGTERM);
 }
 
 
@@ -62,7 +62,7 @@ void TorWatch::waitForTorDeath(pid_t p)
 
 
 
-void TorWatch::waitForTorSOCKS()
+void TorWatch::prepareTor()
 {
   using boost::asio::ip::tcp;
   boost::asio::io_service io;
@@ -74,6 +74,7 @@ void TorWatch::waitForTorSOCKS()
 
   authenticateToTor(socket);
   waitUntilBootstrapped(socket);
+  // authenticateQuorum(socket);
 }
 
 
@@ -92,6 +93,7 @@ void TorWatch::authenticateToTor(boost::asio::ip::tcp::socket& socket)
 
   if (response != "250 OK\r\n")
   {
+    Log::get().notice("Tor replied: " + response);
     Log::get().warn("Unexpected answer from Tor!");
     exit(1);
   }
@@ -120,6 +122,29 @@ void TorWatch::waitUntilBootstrapped(boost::asio::ip::tcp::socket& socket)
     Log::get().notice(response);
   }
 }
+
+
+/*
+void TorWatch::authenticateQuorum(boost::asio::ip::tcp::socket& socket)
+{
+  const char* msg = std::string(
+                        "SETCONF HidServAuth=\"onions55e7yam27n.onion "
+                        "6LCem/8VJIBoFs5Ct94VpQ\"\r\nSAVECONF\r\n\0").c_str();
+
+  boost::asio::write(socket, boost::asio::buffer(std::string(msg)));
+
+  // read from socket until newline
+  boost::asio::streambuf buffer;
+  boost::asio::read_until(socket, buffer, "\n");
+  std::string response = toString(buffer);
+
+  if (response != "250 OK\r\n250 OK\r\n")
+  {
+    Log::get().notice("Tor replied: " + response);
+    Log::get().warn("Unexpected answer from Tor!");
+    exit(1);
+  }
+}*/
 
 
 
