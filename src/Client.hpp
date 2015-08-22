@@ -2,7 +2,7 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <onions-common/tcp/SocksClient.hpp>
+#include <onions-common/tcp/TorStream.hpp>
 #include <unordered_map>
 #include <memory>
 #include <string>
@@ -25,7 +25,7 @@ class Client
   void operator=(Client const&) = delete;
   bool connectToResolver();
 
-  std::shared_ptr<SocksClient> socks_;
+  std::shared_ptr<TorStream> mirror_;
   std::unordered_map<std::string, std::string> cache_;
 };
 
