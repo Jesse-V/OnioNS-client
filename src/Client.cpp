@@ -12,7 +12,7 @@ void Client::listenForDomains(short socksPort)
 {
   auto addr = Config::getMirror()[0];
   const auto SERVER_PORT = Const::SERVER_PORT;
-  mirror_ = std::make_shared<TorStream>("127.0.0.1", 9050,
+  mirror_ = std::make_shared<TorStream>("127.0.0.1", socksPort,
                                         addr["addr"].asString(), SERVER_PORT);
 
   IPC ipc(Const::IPC_PORT);
