@@ -1,3 +1,12 @@
+tor-onions-client (0.6.0.0~trusty) trusty; urgency=medium
+
+  * Support for Mirrors (name servers) hosted by hidden services.
+  * Decrease logging of Tor Browser activity. (#19)
+  * Close OnioNS child processes when the Tor Browser is closed. (#13)
+  * Check.torproject.org now shows if OnioNS is enabled. (#8)
+
+ -- Jesse Victors <kernelcorn@riseup.net>  Wed, 26 Aug 2015 23:00:00 -0800
+
 tor-onions-client (0.5.1.0~trusty) trusty; urgency=medium
 
   * 404ed lookups now correctly halt the lookup in the Tor Browser. (#18)
