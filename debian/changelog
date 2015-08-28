@@ -1,4 +1,4 @@
-tor-onions-client (0.6.0.0~trusty) trusty; urgency=medium
+tor-onions-client (0.6.0.6~trusty) trusty; urgency=medium
 
   * Support for Mirrors (name servers) hosted by hidden services.
   * Decrease logging of Tor Browser activity. (#19)

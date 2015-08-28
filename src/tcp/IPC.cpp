@@ -44,7 +44,7 @@ void IPC::handleAccept(boost::shared_ptr<IPCSession> session,
   Log::get().notice("IPC connection accepted.");
   if (error)
   {
-    std::cerr << error.message() << std::endl;
+    Log::get().error(error.message());
     return;
   }
 
