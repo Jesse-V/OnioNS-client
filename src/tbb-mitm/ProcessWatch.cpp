@@ -10,11 +10,13 @@
 #include <netdb.h>
 
 
-pid_t ProcessWatch::launchTor(char* argv[])
+pid_t ProcessWatch::launchTor(char** argv)
 {
   Log::get().notice("Launching Tor...");
   argv[0] = const_cast<char*>("TorBrowser/Tor/torbin");
   pid_t torP = startProcess(argv);
+
+  Log::get().notice("Tor started with pid " + std::to_string(torP));
 
   // wait for Tor's control port to be available
   while (!isOpen(9151))
@@ -38,6 +40,8 @@ pid_t ProcessWatch::launchOnioNS(pid_t torP)
   Log::get().notice("Launching OnioNS client software...");
   pid_t ocP =
       ProcessWatch::startProcess(ProcessWatch::getOnionsClientProcess());
+
+  Log::get().notice("OnioNS-client started with pid " + std::to_string(ocP));
 
   // wait until onions-client has established a connection
   while (!ProcessWatch::isOpen(9053))
@@ -65,7 +69,9 @@ pid_t ProcessWatch::launchStem()
 {
   // launch the Stem script
   Log::get().notice("Launching OnioNS-TBB software...");
-  return ProcessWatch::startProcess(ProcessWatch::getStemProcess());
+  pid_t stemP = ProcessWatch::startProcess(ProcessWatch::getStemProcess());
+  Log::get().notice("Stem script started with pid " + std::to_string(stemP));
+  return stemP;
 }
 
 
@@ -123,6 +129,46 @@ bool ProcessWatch::isOpen(int port)
                         sizeof(serv_addr)) >= 0;
   close(sockfd);
   return isOpen;
+}
+
+
+
+bool ProcessWatch::isRunning(pid_t p)
+{  // adapted from wait's manpage
+
+  int status;
+  pid_t w = waitpid(p, &status, WUNTRACED | WCONTINUED | WNOHANG);
+  if (w == -1)
+  {
+    Log::get().warn("Waitpid encountered an error.");
+    return false;
+  }
+
+  if (WIFEXITED(status))
+  {
+    Log::get().notice("Child process " + std::to_string(p) +
+                      " exited with status " +
+                      std::to_string(WEXITSTATUS(status)));
+    return false;
+  }
+
+  if (WIFSIGNALED(status))
+  {
+    Log::get().notice("Child process " + std::to_string(p) +
+                      " killed with status " +
+                      std::to_string(WTERMSIG(status)));
+    return false;
+  }
+
+  if (WIFSTOPPED(status))
+    Log::get().notice("Child process " + std::to_string(p) +
+                      " stopped/paused with status " +
+                      std::to_string(WSTOPSIG(status)));
+
+  if (WIFCONTINUED(status))
+    Log::get().notice("Child process " + std::to_string(p) + " continued");
+
+  return true;
 }
 
 

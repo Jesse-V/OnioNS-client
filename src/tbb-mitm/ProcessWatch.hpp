@@ -7,12 +7,13 @@
 class ProcessWatch
 {
  public:
-  static pid_t launchTor(char* argv[]);
-  static pid_t launchOnioNS(pid_t torP);
+  static pid_t launchTor(char**);
+  static pid_t launchOnioNS(pid_t);
   static pid_t launchStem();
 
-  static pid_t startProcess(char** args);
+  static pid_t startProcess(char**);
   static bool isOpen(int port);
+  static bool isRunning(pid_t);
   static char** getStemProcess();
   static char** getOnionsClientProcess();
 };

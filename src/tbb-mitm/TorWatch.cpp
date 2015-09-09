@@ -25,40 +25,17 @@ int main(int argc, char* argv[])
   pid_t ocP = ProcessWatch::launchOnioNS(torP);
   pid_t stemP = ProcessWatch::launchStem();
 
-  TorWatch::waitForTorDeath(torP);
+  std::chrono::milliseconds pollTime(250);
+  while (ProcessWatch::isRunning(torP) && ProcessWatch::isRunning(ocP) &&
+         ProcessWatch::isRunning(stemP))
+  {
+    std::this_thread::sleep_for(pollTime);
+  }
 
   // kill children
+  kill(torP, SIGTERM);
   kill(ocP, SIGTERM);
   kill(stemP, SIGTERM);
-}
-
-
-
-void TorWatch::waitForTorDeath(pid_t p)
-{  // adapted from wait's manpage
-
-  int status;
-  do
-  {
-    pid_t w = waitpid(p, &status, WUNTRACED | WCONTINUED);
-    if (w == -1)
-    {
-      perror("waitpid");
-      exit(EXIT_FAILURE);
-    }
-
-    if (WIFEXITED(status))
-      Log::get().notice("Tor exited, status= " +
-                        std::to_string(WEXITSTATUS(status)));
-    else if (WIFSIGNALED(status))
-      Log::get().notice("Tor killed by signal " +
-                        std::to_string(WTERMSIG(status)));
-    else if (WIFSTOPPED(status))
-      Log::get().notice("Tor stopped by signal " +
-                        std::to_string(WSTOPSIG(status)));
-    else if (WIFCONTINUED(status))
-      Log::get().notice("Tor continued");
-  } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 }
 
 
