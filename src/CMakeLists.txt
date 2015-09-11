@@ -11,6 +11,8 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "-g -O3 --std=c++11 -Wall -Wextra -pedantic -Wdouble-promotion -Wfloat-equal -Wunsafe-loop-optimizations")
 endif()
 
+include_directories(/usr/include/onions-common /usr/include/botan-1.10)
+
 add_executable(onions-client
   main.cpp
   Client.cpp
@@ -26,14 +28,49 @@ add_executable(onions-tbb
 
 add_dependencies(onions-client onions-tbb)
 
-include_directories(/usr/include/onions-common/include /usr/include/botan-1.10 /usr/include/jsoncpp)
+FIND_LIBRARY(onions-common NAMES "onions-common" REQUIRED
+  PATHS /usr/lib/onions-common NO_DEFAULT_PATH)
+FIND_LIBRARY(onions-cyoencode NAMES "onions-cyoencode" REQUIRED
+  PATHS /usr/lib/onions-common NO_DEFAULT_PATH)
+FIND_LIBRARY(onions-jsoncpp NAMES "onions-jsoncpp" REQUIRED
+  PATHS /usr/lib/onions-common NO_DEFAULT_PATH)
+FIND_LIBRARY(onions-scrypt NAMES "libscrypt.so.0" REQUIRED
+  PATHS /usr/lib/onions-common NO_DEFAULT_PATH)
 
-target_link_libraries(onions-client onions-common onions-cyoencode jsoncpp popt botan-1.10 pthread ${Boost_SYSTEM_LIBRARY} ${Boost_LIBRARIES})
-target_link_libraries(onions-tbb    onions-common onions-cyoencode jsoncpp popt botan-1.10 pthread ${Boost_SYSTEM_LIBRARY} ${Boost_LIBRARIES})
+if (${onions-common} MATCHES ".*-NOTFOUND")
+  message(FATAL_ERROR "OnioNS-common could not be found! Please install it.")
+else()
+  message(STATUS "Found OnioNS-common library")
+endif()
+
+if (${onions-cyoencode} MATCHES ".*-NOTFOUND")
+  message(FATAL_ERROR "OnioNS-common's CyoEncode component was not found!")
+else()
+  message(STATUS "Found OnioNS-common's CyoEncode component")
+endif()
+
+if (${onions-jsoncpp} MATCHES ".*-NOTFOUND")
+  message(FATAL_ERROR "OnioNS-common's jsoncpp component was not found!")
+else()
+  message(STATUS "Found OnioNS-common's JsonCpp component")
+endif()
+
+if (${onions-scrypt} MATCHES ".*-NOTFOUND")
+  message(FATAL_ERROR "OnioNS-common's scrypt component was not found!")
+else()
+  message(STATUS "Found OnioNS-common's libscrypt component")
+endif()
+
+target_link_libraries(onions-tbb    ${onions-common} ${onions-cyoencode}
+  ${onions-jsoncpp} ${onions-scrypt} popt botan-1.10 pthread
+  ${Boost_SYSTEM_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(onions-client ${onions-common} ${onions-cyoencode}
+  ${onions-jsoncpp} ${onions-scrypt} popt botan-1.10 pthread
+  ${Boost_SYSTEM_LIBRARY} ${Boost_LIBRARIES})
 
 #installation of files
 set(ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 install(TARGETS onions-client               DESTINATION /usr/bin/)
+install(TARGETS onions-tbb                  DESTINATION /usr/bin/)
 install(FILES ${ASSETS}/client.py           DESTINATION /var/lib/tor-onions/)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/onions-tbb DESTINATION /usr/bin/ PERMISSIONS WORLD_READ WORLD_EXECUTE GROUP_READ GROUP_EXECUTE OWNER_READ OWNER_WRITE OWNER_EXECUTE)
 install(FILES ${ASSETS}/onions-client.1.gz  DESTINATION /usr/share/man/man1)
