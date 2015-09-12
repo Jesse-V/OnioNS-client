@@ -11,7 +11,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "-g -O3 --std=c++11 -Wall -Wextra -pedantic -Wdouble-promotion -Wfloat-equal -Wunsafe-loop-optimizations")
 endif()
 
-include_directories(/usr/include/onions-common /usr/include/botan-1.10)
+include_directories(${CMAKE_INSTALL_PREFIX}/include/onions-common /usr/include/botan-1.10)
 
 add_executable(onions-client
   main.cpp
@@ -29,13 +29,15 @@ add_executable(onions-tbb
 add_dependencies(onions-client onions-tbb)
 
 FIND_LIBRARY(onions-common NAMES "onions-common" REQUIRED
-  PATHS /usr/lib/onions-common NO_DEFAULT_PATH)
+  PATHS ${CMAKE_INSTALL_PREFIX}/lib/onions-common NO_DEFAULT_PATH)
 FIND_LIBRARY(onions-cyoencode NAMES "onions-cyoencode" REQUIRED
-  PATHS /usr/lib/onions-common NO_DEFAULT_PATH)
+  PATHS ${CMAKE_INSTALL_PREFIX}/lib/onions-common NO_DEFAULT_PATH)
 FIND_LIBRARY(onions-jsoncpp NAMES "onions-jsoncpp" REQUIRED
-  PATHS /usr/lib/onions-common NO_DEFAULT_PATH)
+  PATHS ${CMAKE_INSTALL_PREFIX}/lib/onions-common NO_DEFAULT_PATH)
 FIND_LIBRARY(onions-scrypt NAMES "libscrypt.so.0" REQUIRED
-  PATHS /usr/lib/onions-common NO_DEFAULT_PATH)
+  PATHS ${CMAKE_INSTALL_PREFIX}/lib/onions-common NO_DEFAULT_PATH)
+
+message(STATUS ${CMAKE_INSTALL_PREFIX})
 
 if (${onions-common} MATCHES ".*-NOTFOUND")
   message(FATAL_ERROR "OnioNS-common could not be found! Please install it.")
@@ -70,7 +72,7 @@ target_link_libraries(onions-client ${onions-common} ${onions-cyoencode}
 
 #installation of files
 set(ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
-install(TARGETS onions-client               DESTINATION /usr/bin/)
-install(TARGETS onions-tbb                  DESTINATION /usr/bin/)
-install(FILES ${ASSETS}/client.py           DESTINATION /var/lib/tor-onions/)
-install(FILES ${ASSETS}/onions-client.1.gz  DESTINATION /usr/share/man/man1)
+install(TARGETS onions-client               DESTINATION bin/)
+install(TARGETS onions-tbb                  DESTINATION bin/)
+install(FILES ${ASSETS}/client.py           DESTINATION lib/tor-onions/)
+install(FILES ${ASSETS}/onions-client.1.gz  DESTINATION share/man/man1/)
