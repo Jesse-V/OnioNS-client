@@ -37,8 +37,6 @@ FIND_LIBRARY(onions-jsoncpp NAMES "onions-jsoncpp" REQUIRED
 FIND_LIBRARY(onions-scrypt NAMES "libscrypt.so.0" REQUIRED
   PATHS ${CMAKE_INSTALL_PREFIX}/lib/onions-common NO_DEFAULT_PATH)
 
-message(STATUS ${CMAKE_INSTALL_PREFIX})
-
 if (${onions-common} MATCHES ".*-NOTFOUND")
   message(FATAL_ERROR "OnioNS-common could not be found! Please install it.")
 else()
@@ -58,10 +56,14 @@ else()
 endif()
 
 if (${onions-scrypt} MATCHES ".*-NOTFOUND")
-  message(FATAL_ERROR "OnioNS-common's scrypt component was not found!")
+  message(FATAL_ERROR "OnioNS-common's libscrypt component was not found!")
 else()
   message(STATUS "Found OnioNS-common's libscrypt component")
 endif()
+
+#http://www.cmake.org/Wiki/CMake_RPATH_handling
+SET(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib/onions-common)
+message(STATUS ${CMAKE_INSTALL_PREFIX}/lib/onions-common/)
 
 target_link_libraries(onions-tbb    ${onions-common} ${onions-cyoencode}
   ${onions-jsoncpp} ${onions-scrypt} popt botan-1.10 pthread
@@ -74,5 +76,5 @@ target_link_libraries(onions-client ${onions-common} ${onions-cyoencode}
 set(ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 install(TARGETS onions-client               DESTINATION bin/)
 install(TARGETS onions-tbb                  DESTINATION bin/)
-install(FILES ${ASSETS}/client.py           DESTINATION lib/tor-onions/)
+install(FILES ${ASSETS}/onions-client.py    DESTINATION bin/)
 install(FILES ${ASSETS}/onions-client.1.gz  DESTINATION share/man/man1/)
