@@ -178,7 +178,7 @@ char** ProcessWatch::getStemProcess()
 {
   const char** args = new const char* [3];
   args[0] = "python\0";
-  args[1] = "/usr/bin/onions-client.py\0";
+  args[1] = "/usr/bin/onions-stem.py\0";
   args[2] = NULL;
   return const_cast<char**>(args);
 }

@@ -76,5 +76,5 @@ target_link_libraries(onions-client ${onions-common} ${onions-cyoencode}
 set(ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 install(TARGETS onions-client               DESTINATION bin/)
 install(TARGETS onions-tbb                  DESTINATION bin/)
-install(FILES ${ASSETS}/onions-client.py    DESTINATION bin/)
+install(FILES ${ASSETS}/onions-stem.py      DESTINATION bin/)
 install(FILES ${ASSETS}/onions-client.1.gz  DESTINATION share/man/man1/)
