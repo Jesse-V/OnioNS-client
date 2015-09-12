@@ -10,6 +10,11 @@
 #include <netdb.h>
 
 
+#ifndef INSTALL_PREFIX
+#error CMake has not defined INSTALL_PREFIX!
+#endif
+
+
 pid_t ProcessWatch::launchTor(char** argv)
 {
   Log::get().notice("Launching Tor...");
@@ -178,7 +183,7 @@ char** ProcessWatch::getStemProcess()
 {
   const char** args = new const char* [3];
   args[0] = "python\0";
-  args[1] = "/usr/bin/onions-stem.py\0";
+  args[1] = "INSTALL_PREFIX/bin/onions-stem.py\0";
   args[2] = NULL;
   return const_cast<char**>(args);
 }
