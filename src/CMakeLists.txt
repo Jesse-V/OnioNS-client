@@ -13,7 +13,7 @@ endif()
 
 include_directories(${CMAKE_INSTALL_PREFIX}/include/onions-common /usr/include/botan-1.10)
 
-add_definitions(-DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
+add_definitions(-DINSTALL_PREFIX=std::string\("${CMAKE_INSTALL_PREFIX}"\))
 
 add_executable(onions-client
   main.cpp
