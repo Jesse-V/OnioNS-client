@@ -2,7 +2,7 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <onions-common/tcp/TorStream.hpp>
+#include <onions-common/tcp/AuthenticatedStream.hpp>
 #include <unordered_map>
 #include <memory>
 #include <string>
@@ -18,6 +18,9 @@ class Client
 
   void listenForDomains(short);
   std::string resolve(const std::string&);
+  std::string remotelyResolve(const std::string&);
+  Json::Value fetchRecord(const std::string&);
+  Json::Value fetchMerkleSubtree(const std::string&);
 
  private:
   Client() {}
@@ -25,7 +28,7 @@ class Client
   void operator=(Client const&) = delete;
   bool connectToResolver();
 
-  std::shared_ptr<TorStream> mirror_;
+  std::shared_ptr<AuthenticatedStream> mirror_;
   std::unordered_map<std::string, std::string> cache_;
 };
 

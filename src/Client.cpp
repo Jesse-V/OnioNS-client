@@ -10,10 +10,13 @@
 
 void Client::listenForDomains(short socksPort)
 {
-  auto addr = Config::getMirror()[0];
+  const auto M_NODE = Config::getMirror()[0];
+  const auto M_ONION = M_NODE["addr"].asString();
+  const auto M_KEY = M_NODE["key"].asString();
   const auto SERVER_PORT = Const::SERVER_PORT;
-  mirror_ = std::make_shared<TorStream>("127.0.0.1", socksPort,
-                                        addr["addr"].asString(), SERVER_PORT);
+
+  mirror_ = std::make_shared<AuthenticatedStream>("127.0.0.1", socksPort,
+                                                  M_ONION, SERVER_PORT, M_KEY);
 
   IPC ipc(Const::IPC_PORT);
   ipc.start();
@@ -36,21 +39,9 @@ std::string Client::resolve(const std::string& torDomain)
       auto iterator = cache_.find(domain);
       if (iterator == cache_.end())
       {
-        Log::get().notice("Sending \"" + domain + "\" to name server...");
-
-        auto received = mirror_->sendReceive("domainQuery", domain);
-        if (received["type"] == "error")
-        {
-          Log::get().warn("Server response: " + received["value"].asString());
-          return "<404>";
-        }
-
-        Log::get().notice("Received Record response.");
-        auto dest = Common::getDestination(
-            Common::parseRecord(received["value"].asString()), domain);
-
-        cache_[domain] = dest;
-        domain = dest;
+        std::string destination = remotelyResolve(domain);
+        cache_[domain] = destination;
+        domain = destination;
       }
       else
         domain = iterator->second;  // retrieve from cache
@@ -70,4 +61,75 @@ std::string Client::resolve(const std::string& torDomain)
   }
 
   return "<General_Error>";
+}
+
+
+
+std::string Client::remotelyResolve(const std::string& domain)
+{
+  // get Record from name server
+  Json::Value recordObj = fetchRecord(domain);
+  if (recordObj["type"] == "error")
+  {
+    Log::get().warn(recordObj["value"].asString());
+    return "<not-found>";
+  }
+
+  RecordPtr record = Common::parseRecord(recordObj["value"].asString());
+  if (!record)
+  {
+    Log::get().warn("Failed to parse Record!");
+    return "<failed-to-parse-record>";
+  }
+
+  Json::Value subtreeObj = fetchMerkleSubtree(domain);
+  if (subtreeObj["type"] == "error")
+  {
+    Log::get().warn(subtreeObj["value"].asString());
+    return "<failed-authentication>";
+  }
+
+  /*
+  if (!MerkleTree::doesContain(subtreeJSON, record))
+  {
+    Log::get().warn("The Record cannot be authenticated!");
+    return "<Record cannot be authenticated>"; //520, general error
+  }
+
+  auto qSignatureJSON = fetchQuorumRootSignature(domain);
+  if (!verifyRootSignature(subtreeJSON, qSignatureJSON))
+  {
+    Log::get().warn("Invalid signature on Merkle root.");
+    return "<Invalid root signature>";
+  }
+
+  Log::get().notice("Record was successfully authenticated.");
+*/
+
+  Log::get().notice(subtreeObj["value"].asString());
+
+
+  return Common::getDestination(record, domain);
+}
+
+
+
+Json::Value Client::fetchRecord(const std::string& domain)
+{
+  Log::get().notice("Remotely resolving \"" + domain + "\" to a Record...");
+  Json::Value response = mirror_->sendReceive("domainQuery", domain);
+  Log::get().notice("Received Record from name server.");
+
+  return response;
+}
+
+
+
+Json::Value Client::fetchMerkleSubtree(const std::string& domain)
+{
+  Log::get().notice("Fetching Merkle subtree for Record...");
+  Json::Value response = mirror_->sendReceive("getMerkleSubtree", domain);
+  Log::get().notice("Received Merkle subtree from name server.");
+
+  return response;
 }
