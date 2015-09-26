@@ -2,6 +2,7 @@
 #include "Client.hpp"
 #include "tcp/IPC.hpp"
 #include <onions-common/Common.hpp>
+#include <onions-common/containers/Cache.hpp>
 #include <onions-common/Log.hpp>
 #include <onions-common/Config.hpp>
 #include <onions-common/Constants.hpp>
@@ -15,8 +16,17 @@ void Client::listenForDomains(short socksPort)
   const auto M_KEY = M_NODE["key"].asString();
   const auto SERVER_PORT = Const::SERVER_PORT;
 
-  mirror_ = std::make_shared<AuthenticatedStream>("127.0.0.1", socksPort,
-                                                  M_ONION, SERVER_PORT, M_KEY);
+  try
+  {
+    Log::get().notice("Connecting to name server...");
+
+    mirror_ = std::make_shared<AuthenticatedStream>(
+        "127.0.0.1", socksPort, M_ONION, SERVER_PORT, M_KEY);
+  }
+  catch (const std::runtime_error& re)
+  {
+    Log::get().error("SOCKS responded: " + std::string(re.what()));
+  }
 
   IPC ipc(Const::IPC_PORT);
   ipc.start();
@@ -26,31 +36,18 @@ void Client::listenForDomains(short socksPort)
 
 std::string Client::resolve(const std::string& torDomain)
 {
-  if (torDomain == "check.torproject.org")
-    return "onions.jessevictors.com";
-
   try
   {
     std::string domain = torDomain;
 
     while (Utils::strEndsWith(domain, ".tor"))
-    {
-      // check cache first
-      auto iterator = cache_.find(domain);
-      if (iterator == cache_.end())
-      {
-        std::string destination = remotelyResolve(domain);
-        cache_[domain] = destination;
-        domain = destination;
-      }
-      else
-        domain = iterator->second;  // retrieve from cache
-    }
+      if (!resolveOnce(domain))
+        return "<error_resolving>";
 
     if (domain.length() != 22 || !Utils::strEndsWith(domain, ".onion"))
     {
       Log::get().warn("\"" + domain + "\" is not a HS address!");
-      return "<Invalid_Request>";
+      return "<invalid_request>";
     }
 
     return domain;
@@ -58,69 +55,56 @@ std::string Client::resolve(const std::string& torDomain)
   catch (std::runtime_error& re)
   {
     Log::get().error(re.what());
+    return "<general_error>";
   }
-
-  return "<General_Error>";
 }
 
 
 
-std::string Client::remotelyResolve(const std::string& domain)
+bool Client::resolveOnce(std::string& domain)
 {
-  // get Record from name server
-  Json::Value recordObj = fetchRecord(domain);
-  if (recordObj["type"] == "error")
-  {
-    Log::get().warn(recordObj["value"].asString());
-    return "<not-found>";
-  }
-
-  RecordPtr record = Common::parseRecord(recordObj["value"].asString());
+  // check cache first
+  RecordPtr record = Cache::get(domain);
   if (!record)
-  {
-    Log::get().warn("Failed to parse Record!");
-    return "<failed-to-parse-record>";
+  {  // try to remotely resolve
+
+    record = fetchRecord(domain);
+    if (!record)
+      return false;
+
+    Cache::add(record);
+
+    Json::Value subtreeObj = fetchMerkleSubtree(domain);
+    Log::get().notice(subtreeObj["value"].toStyledString());
+
+    // todo: MerkleTree::doesContain(subtreeJSON, record)
+    // todo: check root
+
+    SHA384_HASH tmpHash;
+    if (!fetchQuorumRootSignature(tmpHash))
+      return false;
   }
 
-  Json::Value subtreeObj = fetchMerkleSubtree(domain);
-  if (subtreeObj["type"] == "error")
-  {
-    Log::get().warn(subtreeObj["value"].asString());
-    return "<failed-authentication>";
-  }
-
-  /*
-  if (!MerkleTree::doesContain(subtreeJSON, record))
-  {
-    Log::get().warn("The Record cannot be authenticated!");
-    return "<Record cannot be authenticated>"; //520, general error
-  }
-
-  auto qSignatureJSON = fetchQuorumRootSignature(domain);
-  if (!verifyRootSignature(subtreeJSON, qSignatureJSON))
-  {
-    Log::get().warn("Invalid signature on Merkle root.");
-    return "<Invalid root signature>";
-  }
-
-  Log::get().notice("Record was successfully authenticated.");
-*/
-
-  Log::get().notice(subtreeObj["value"].asString());
-
-
-  return Common::getDestination(record, domain);
+  //Log::get().notice("Record was successfully authenticated.");
+  domain = Common::getDestination(record, domain);
+  return true;
 }
 
 
 
-Json::Value Client::fetchRecord(const std::string& domain)
+RecordPtr Client::fetchRecord(const std::string& domain)
 {
   Log::get().notice("Remotely resolving \"" + domain + "\" to a Record...");
   Json::Value response = mirror_->sendReceive("domainQuery", domain);
   Log::get().notice("Received Record from name server.");
 
-  return response;
+  if (response["type"] == "error")
+  {
+    Log::get().warn(response["value"].asString());
+    return nullptr;
+  }
+
+  return Common::parseRecord(response["value"].asString());
 }
 
 
@@ -132,4 +116,25 @@ Json::Value Client::fetchMerkleSubtree(const std::string& domain)
   Log::get().notice("Received Merkle subtree from name server.");
 
   return response;
+}
+
+
+
+bool Client::fetchQuorumRootSignature(const SHA384_HASH& root)
+{
+  auto response = mirror_->sendReceive("getRootSignature", "");
+  if (response["type"] == "error")
+  {
+    Log::get().warn("Error when getting root signature from Quorum node: " +
+                    response["value"].asString());
+    return false;
+  }
+  else
+  {
+    static auto Q_KEY = Config::getQuorumNode()[0]["key"].asString();
+    ED_SIGNATURE sig;
+    auto result =
+        Common::verifyRootSignature(response["value"], sig, root, Q_KEY);
+    return result.first;
+  }
 }

@@ -3,7 +3,7 @@
 #define CLIENT_HPP
 
 #include <onions-common/tcp/AuthenticatedStream.hpp>
-#include <unordered_map>
+#include <onions-common/containers/records/Record.hpp>
 #include <memory>
 #include <string>
 
@@ -18,9 +18,10 @@ class Client
 
   void listenForDomains(short);
   std::string resolve(const std::string&);
-  std::string remotelyResolve(const std::string&);
-  Json::Value fetchRecord(const std::string&);
+  bool resolveOnce(std::string&);
+  RecordPtr fetchRecord(const std::string&);
   Json::Value fetchMerkleSubtree(const std::string&);
+  bool fetchQuorumRootSignature(const SHA384_HASH&);
 
  private:
   Client() {}
@@ -29,7 +30,6 @@ class Client
   bool connectToResolver();
 
   std::shared_ptr<AuthenticatedStream> mirror_;
-  std::unordered_map<std::string, std::string> cache_;
 };
 
 #endif
