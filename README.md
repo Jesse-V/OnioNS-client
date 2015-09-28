@@ -35,7 +35,7 @@ I provide builds for Debian Wheezy in the [Releases section](https://github.com/
 > 2. Download and extract the latest release from the [Releases page](https://github.com/Jesse-V/OnioNS-client/releases).
 > 3. **(mkdir build; cd build; cmake ../src; make; sudo make install)**
 
-The rebuild.sh script is available if you are actively developing OnioNS. You will need to install *clang-format-3.6* and *cppcheck* as the script also styles the code and performs a static analysis check.
+The rebuild.sh script is available if you are actively developing OnioNS. You will need to install *clang-3.5*, *clang-format-3.5*, and *cppcheck* as the script also styles the code and performs a static analysis check.
 
 You can cleanup your build with **rm -rf build**
 
@@ -55,12 +55,14 @@ This replaces the normal Tor binary with a executable that launches the original
 The Tor Browser operates as before, but the OnioNS software running in the background allows the Tor Browser to load hidden services under a .tor domain name.
 
 > 1. Open the Tor Browser.
-> 2. Type "example.tor" into the Tor Browser.
-> 3. In a moment, you should arrive at the project's hidden service.
+> 2. Visit "check.torproject.org" or click the link on the homepage as you normally would to check for Tor's status.
+> 3. You should be redirected to a page indicating that OnioNS is working correctly. If so, proceed to step 4. Otherwise, OnioNS isn't working properly and you will see the normal Tor Check page with your exit's IP address.
+> 4. Type "example.tor" into the Tor Browser, or any other name that you know to be registered.
+> 5. In a moment, the Tor Browser should load a hidden service.
 
 ### Troubleshooting
 
-If at startup the Tor Browser immediately throws a message saying "Something Went Wrong! Tor is not working in this browser." it most likely means that the OnioNS software was unable to connect to the network. This is a fatal situation, so the software aborts and the Tor Browser throws this message. Since this occurs after Tor starts, the issue is most likely not on your end. Please contact me (see below) for assistance.
+If at startup the Tor Browser immediately throws a message saying "Something Went Wrong! Tor is not working in this browser." or if you get a message saying that Tor exited unexpectedly, it most likely means that the OnioNS software was unable to connect to its network. This is a fatal situation, so the software aborts and the Tor Browser throws this message. Since this occurs after Tor starts, the issue is most likely not on your end. Please contact me (see below) for assistance.
 
 If you are unable to load "example.tor", it's possible that either the hidden service is down or that the OnioNS software is not running properly on your end. To test this, visit "onions55e7yam27n.onion". If the site loads, you could try restarting the Tor Browser, which may clear the issue. If the site still does not load, please contact me for further assistance.
 
@@ -70,4 +72,4 @@ If you have installed the software and then initialized the Tor Browser (again, 
 
 ### How to Contribute
 
-Most of all, I need more testers to verify that the software is stable and reliable. If you find an issue, please report it on Github. I also need inspections: of the network using Wireshark or similar tools to verify that there are no leaks, and of the code by examining the code for corner-cases or situations that I may have missed. If are a developer, I gladly accept pull requests.
+Most of all, I need more testers to verify that the software is stable and reliable. If you find an issue, please report it on Github. I am working on adding unit tests, which should help address many corner-cases and crashes for unexpected input. If are a developer, I gladly accept pull requests.

@@ -19,8 +19,8 @@ gzip --best -c src/assets/manpage | sed "s/<DATE>/$date/g" > src/assets/onions-c
 
 echo "Preparing build...        ----------------------------------------------"
 
-export CXX=/usr/bin/clang++
-export CC=/usr/bin/clang
+export CXX=/usr/bin/clang++-3.6
+export CC=/usr/bin/clang-3.6
 
 mkdir -p build/
 cd build
@@ -28,11 +28,10 @@ cmake ../src # -DCMAKE_BUILD_TYPE=Debug
 
 echo "Compiling...              ----------------------------------------------"
 if (make -j $(grep -c ^processor /proc/cpuinfo)) then
-  echo "Static analysis...        ----------------------------------------------"
   cd ..
-  cppcheck --enable=all --platform=unix64 --inconclusive src/*
+  echo "Compilation successful!"
 else
-  rm -f onions-client onions-tbb
   cd ..
+  rm -rf build/
 fi
 

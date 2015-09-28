@@ -2,6 +2,7 @@
 #include "Client.hpp"
 #include "tcp/IPC.hpp"
 #include <onions-common/Common.hpp>
+#include <onions-common/containers/MerkleTree.hpp>
 #include <onions-common/containers/Cache.hpp>
 #include <onions-common/Log.hpp>
 #include <onions-common/Config.hpp>
@@ -74,18 +75,19 @@ bool Client::resolveOnce(std::string& domain)
 
     Cache::add(record);
 
+    // todo: we can cache the subtrees to avoid refetching every time
     Json::Value subtreeObj = fetchMerkleSubtree(domain);
     Log::get().notice(subtreeObj["value"].toStyledString());
 
-    // todo: MerkleTree::doesContain(subtreeJSON, record)
-    // todo: check root
+    if (!MerkleTree::doesContain(subtreeObj, record))
+      return false;
 
-    SHA384_HASH tmpHash;
+    SHA384_HASH tmpHash;  // todo: replace with actual merkle hash
     if (!fetchQuorumRootSignature(tmpHash))
       return false;
   }
 
-  //Log::get().notice("Record was successfully authenticated.");
+  // Log::get().notice("Record was successfully authenticated.");
   domain = Common::getDestination(record, domain);
   return true;
 }
@@ -135,6 +137,10 @@ bool Client::fetchQuorumRootSignature(const SHA384_HASH& root)
     ED_SIGNATURE sig;
     auto result =
         Common::verifyRootSignature(response["value"], sig, root, Q_KEY);
+
+    // MerkleTree::extractRoot
+
+    // todo: MerkleTree::verifyRoot
     return result.first;
   }
 }
