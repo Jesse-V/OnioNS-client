@@ -1,3 +1,12 @@
+tor-onions-client (0.6.1.0~trusty) trusty; urgency=medium
+
+  * Authenticate Records using a Merkle tree.
+  * Use authenticated connections to name server.
+  * Add Clang's scan-build static analysis tool to build scripts.
+  * Install to /usr/local/ when compiled from source.
+
+ -- Jesse Victors <kernelcorn@riseup.net>  Mon, 28 Sept 2015 13:00:00 -0800
+
 tor-onions-client (0.6.0.6~trusty) trusty; urgency=medium
 
   * Support for Mirrors (name servers) hosted by hidden services.

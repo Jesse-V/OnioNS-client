@@ -35,23 +35,26 @@ void Client::listenForDomains(short socksPort)
 
 
 
-std::string Client::resolve(const std::string& torDomain)
+std::string Client::resolve(const std::string& domain)
 {
+  if (domain == "check.torproject.org")
+    return "onions.jessevictors.com";
+
   try
   {
-    std::string domain = torDomain;
+    std::string d = domain;
 
-    while (Utils::strEndsWith(domain, ".tor"))
-      if (!resolveOnce(domain))
+    while (Utils::strEndsWith(d, ".tor"))
+      if (!resolveOnce(d))
         return "<error_resolving>";
 
-    if (domain.length() != 22 || !Utils::strEndsWith(domain, ".onion"))
+    if (d.length() != 22 || !Utils::strEndsWith(d, ".onion"))
     {
-      Log::get().warn("\"" + domain + "\" is not a HS address!");
+      Log::get().warn("\"" + d + "\" is not a HS address!");
       return "<invalid_request>";
     }
 
-    return domain;
+    return d;
   }
   catch (std::runtime_error& re)
   {
@@ -64,9 +67,6 @@ std::string Client::resolve(const std::string& torDomain)
 
 bool Client::resolveOnce(std::string& domain)
 {
-  if (domain == "check.torproject.org")
-    return "onions.jessevictors.com";
-
   // check cache first
   RecordPtr record = Cache::get(domain);
   if (!record)

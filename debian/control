@@ -2,7 +2,7 @@ Source: tor-onions-client
 Section: net
 Priority: optional
 Maintainer: Jesse Victors <kernelcorn@riseup.net>
-Build-Depends: debhelper (>= 7), g++, cmake, make, dpkg-dev, libpopt-dev, libbotan1.10-dev, libasio-dev, libboost-system-dev, tor-onions-common (>= 0.6)
+Build-Depends: debhelper (>= 7), g++, cmake, make, dpkg-dev, libpopt-dev, libbotan1.10-dev, libasio-dev, libboost-system-dev, tor-onions-common (>= 0.7)
 Standards-Version: 3.9.5
 Bugs: https://github.com/Jesse-V/OnioNS-client/issues
 Vcs-Git: https://github.com/Jesse-V/OnioNS-client.git
@@ -10,7 +10,7 @@ Vcs-Browser: https://github.com/Jesse-V/OnioNS-client
 
 Package: tor-onions-client
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, python-stem (>= 1.1), tor-onions-common (>= 0.6)
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-stem (>= 1.1), tor-onions-common (>= 0.7)
 Conflicts: tor-onions-client
 Description: Client-side interaction with the Onion Name System
  OnioNS is a distributed, privacy-enhanced, metadata-free, and highly usable
