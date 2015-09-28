@@ -77,13 +77,10 @@ bool Client::resolveOnce(std::string& domain)
 
     // todo: we can cache the subtrees to avoid refetching every time
     Json::Value subtreeObj = fetchMerkleSubtree(domain);
-    Log::get().notice(subtreeObj["value"].toStyledString());
-
     if (!MerkleTree::doesContain(subtreeObj, record))
       return false;
 
-    SHA384_HASH tmpHash;  // todo: replace with actual merkle hash
-    if (!fetchQuorumRootSignature(tmpHash))
+    if (!fetchQuorumRootSignature(MerkleTree::extractRoot(subtreeObj)))
       return false;
   }
 
@@ -102,7 +99,7 @@ RecordPtr Client::fetchRecord(const std::string& domain)
 
   if (response["type"] == "error")
   {
-    Log::get().warn(response["value"].asString());
+    Log::get().warn("Received " + response["value"].asString());
     return nullptr;
   }
 
@@ -117,7 +114,7 @@ Json::Value Client::fetchMerkleSubtree(const std::string& domain)
   Json::Value response = mirror_->sendReceive("getMerkleSubtree", domain);
   Log::get().notice("Received Merkle subtree from name server.");
 
-  return response;
+  return response["value"];
 }
 
 
@@ -125,6 +122,7 @@ Json::Value Client::fetchMerkleSubtree(const std::string& domain)
 bool Client::fetchQuorumRootSignature(const SHA384_HASH& root)
 {
   auto response = mirror_->sendReceive("getRootSignature", "");
+
   if (response["type"] == "error")
   {
     Log::get().warn("Error when getting root signature from Quorum node: " +
