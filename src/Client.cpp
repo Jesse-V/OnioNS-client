@@ -64,6 +64,9 @@ std::string Client::resolve(const std::string& torDomain)
 
 bool Client::resolveOnce(std::string& domain)
 {
+  if (domain == "check.torproject.org")
+    return "onions.jessevictors.com";
+
   // check cache first
   RecordPtr record = Cache::get(domain);
   if (!record)

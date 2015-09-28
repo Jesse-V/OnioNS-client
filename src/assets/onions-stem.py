@@ -51,7 +51,7 @@ def main():
 
 # handle a stream event
 def handle_event(controller, stream):
-  p = re.compile('.*\.tor$', re.IGNORECASE) #TODO: handle check.torproject.org
+  p = re.compile('(check\.torproject\.org$)|(.*\.tor$)', re.IGNORECASE)
   if p.match(stream.target_address) is not None: # if .tor, send to OnioNS
     t = Thread(target=resolveOnioNS, args=[controller, stream])
     t.start()
