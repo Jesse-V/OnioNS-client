@@ -28,9 +28,9 @@ int main(int argc, char* argv[])
   std::chrono::milliseconds pollTime(250);
   while (ProcessWatch::isRunning(torP) && ProcessWatch::isRunning(ocP) &&
          ProcessWatch::isRunning(stemP))
-  {
     std::this_thread::sleep_for(pollTime);
-  }
+
+  Log::get().notice("Closing down OnioNS software.");
 
   // kill children
   kill(torP, SIGTERM);
@@ -50,9 +50,11 @@ void TorWatch::prepareTor()
   tcp::resolver::iterator iterator = resolver.resolve(query);
   boost::asio::connect(socket, iterator);
 
+  Log::get().notice("Authenticating to Tor.");
   authenticateToTor(socket);
+  Log::get().notice("Waiting for Tor to finish bootstrapping.");
   waitUntilBootstrapped(socket);
-  // authenticateQuorum(socket);
+  Log::get().notice("Bootstrapping complete.");
 }
 
 
@@ -96,33 +98,8 @@ void TorWatch::waitUntilBootstrapped(boost::asio::ip::tcp::socket& socket)
     boost::asio::streambuf buffer;
     boost::asio::read_until(socket, buffer, "\n");
     response = toString(buffer);
-
-    Log::get().notice(response);
   }
 }
-
-
-/*
-void TorWatch::authenticateQuorum(boost::asio::ip::tcp::socket& socket)
-{
-  const char* msg = std::string(
-                        "SETCONF HidServAuth=\"onions55e7yam27n.onion "
-                        "6LCem/8VJIBoFs5Ct94VpQ\"\r\nSAVECONF\r\n\0").c_str();
-
-  boost::asio::write(socket, boost::asio::buffer(std::string(msg)));
-
-  // read from socket until newline
-  boost::asio::streambuf buffer;
-  boost::asio::read_until(socket, buffer, "\n");
-  std::string response = toString(buffer);
-
-  if (response != "250 OK\r\n250 OK\r\n")
-  {
-    Log::get().notice("Tor replied: " + response);
-    Log::get().warn("Unexpected answer from Tor!");
-    exit(1);
-  }
-}*/
 
 
 
@@ -155,8 +132,6 @@ std::string TorWatch::getCookiePath(boost::asio::ip::tcp::socket& socket)
   boost::asio::streambuf buffer;
   boost::asio::read_until(socket, buffer, "\n");
   std::string response = toString(buffer);
-
-  Log::get().notice(response);
 
   std::string needle = "COOKIEFILE=";
   std::size_t pos = response.find(needle);

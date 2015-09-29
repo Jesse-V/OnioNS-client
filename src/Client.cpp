@@ -37,9 +37,6 @@ void Client::listenForDomains(short socksPort)
 
 std::string Client::resolve(const std::string& domain)
 {
-  if (domain == "check.torproject.org")
-    return "onions.jessevictors.com";
-
   try
   {
     std::string d = domain;

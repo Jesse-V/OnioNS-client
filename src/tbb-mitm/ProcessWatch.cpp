@@ -139,53 +139,20 @@ bool ProcessWatch::isOpen(int port)
 
 
 bool ProcessWatch::isRunning(pid_t p)
-{  // adapted from wait's manpage
+{  // http://www.unix.com/programming/121343-c-wexitstatus-question.html
 
-  int status;
-  pid_t w = waitpid(p, &status, WUNTRACED | WCONTINUED | WNOHANG);
-  if (w == -1)
+  errno = 0;
+  if (kill(p, 0) == 0)
+    return true;
+  else
   {
-    Log::get().warn("Waitpid encountered an error.");
+    if (errno == ESRCH)
+      Log::get().notice("Child process " + std::to_string(p) + " has exited.");
+    else
+      Log::get().warn("Could not signal process " + std::to_string(p) + "!");
+
     return false;
   }
-
-  if (WIFEXITED(status))
-  {
-    Log::get().notice("Child process " + std::to_string(p) +
-                      " exited with status " +
-                      std::to_string(WEXITSTATUS(status)));
-    return false;
-  }
-
-  if (WIFSIGNALED(status))
-  {
-    Log::get().notice("Child process " + std::to_string(p) +
-                      " killed with status " +
-                      std::to_string(WTERMSIG(status)));
-    return false;
-  }
-
-  if (WIFSTOPPED(status))
-    Log::get().notice("Child process " + std::to_string(p) +
-                      " stopped/paused with status " +
-                      std::to_string(WSTOPSIG(status)));
-
-  if (WIFCONTINUED(status))
-    Log::get().notice("Child process " + std::to_string(p) + " continued");
-
-  return true;
-}
-
-
-
-// get command for launching the Stem script
-char** ProcessWatch::getStemProcess()
-{
-  const char** args = new const char* [3];
-  args[0] = "python\0";
-  args[1] = (INSTALL_PREFIX + "/bin/onions-stem.py").c_str();
-  args[2] = NULL;
-  return const_cast<char**>(args);
 }
 
 
@@ -198,5 +165,17 @@ char** ProcessWatch::getOnionsClientProcess()
   args[1] = "-o\0";
   args[2] = "TorBrowser/OnioNS/client.log\0";
   args[3] = NULL;
+  return const_cast<char**>(args);
+}
+
+
+
+// get command for launching the Stem script
+char** ProcessWatch::getStemProcess()
+{
+  const char** args = new const char* [3];
+  args[0] = "python\0";
+  args[1] = (INSTALL_PREFIX + "/bin/onions-stem.py").c_str();
+  args[2] = NULL;
   return const_cast<char**>(args);
 }

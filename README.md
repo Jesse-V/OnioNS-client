@@ -54,17 +54,18 @@ This replaces the normal Tor binary with a executable that launches the original
 
 The Tor Browser operates as before, but the OnioNS software running in the background allows the Tor Browser to load hidden services under a .tor domain name.
 
-> 1. Open the Tor Browser.
-> 2. Visit "check.torproject.org" or click the link on the homepage as you normally would to check for Tor's status.
-> 3. You should be redirected to a page indicating that OnioNS is working correctly. If so, proceed to step 4. Otherwise, OnioNS isn't working properly and you will see the normal Tor Check page with your exit's IP address.
-> 4. Type "example.tor" into the Tor Browser, or any other name that you know to be registered.
-> 5. In a moment, the Tor Browser should load a hidden service.
+> 1. Open the Tor Browser. OnioNS is compatible with any method of connecting to the Tor network.
+> 2. Wait a few seconds for the background software to be ready.
+> 3. Visit "example.tor" or any other .tor name that you know to be registered.
+> 4. In a moment, the Tor Browser should load a hidden service.
+
+OnioNS simply adds compatibility for .tor domains and lets all other domains go through, so you can browse the web as normal.
 
 ### Troubleshooting
 
-If at startup the Tor Browser immediately throws a message saying "Something Went Wrong! Tor is not working in this browser." or if you get a message saying that Tor exited unexpectedly, it most likely means that the OnioNS software was unable to connect to its network. This is a fatal situation, so the software aborts and the Tor Browser throws this message. Since this occurs after Tor starts, the issue is most likely not on your end. Please contact me (see below) for assistance.
+If at startup the Tor Browser immediately throws a message saying "Something Went Wrong! Tor is not working in this browser." or if you get a message saying that Tor exited unexpectedly, it most likely means that the OnioNS software was unable to connect to its network. This is a fatal situation, so the software aborts and the Tor Browser throws this message. Please contact me (see below) for assistance.
 
-If you are unable to load "example.tor", it's possible that either the hidden service is down or that the OnioNS software is not running properly on your end. To test this, visit "onions55e7yam27n.onion". If the site loads, you could try restarting the Tor Browser, which may clear the issue. If the site still does not load, please contact me for further assistance.
+If you are unable to load "example.tor", it's possible that either the hidden service is down or that the OnioNS software is not running properly on your end. Wait a few seconds, then try again. If it's still down, visit "onions55e7yam27n.onion". If the site loads, you could try closing and reopening the Tor Browser, which may clear the issue. If the site still does not load, please contact me for further assistance.
 
 ### Getting Help
 
