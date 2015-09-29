@@ -1,3 +1,9 @@
+tor-onions-client (0.6.2.0~trusty) trusty; urgency=medium
+
+  * Fix premature reporting that Tor has exited.
+
+ -- Jesse Victors <kernelcorn@riseup.net>  Tues, 29 Sep 2015 15:00:00 -0800
+
 tor-onions-client (0.6.1.4~trusty) trusty; urgency=medium
 
   * Authenticate Records using a Merkle tree.
