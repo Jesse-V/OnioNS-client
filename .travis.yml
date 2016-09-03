@@ -5,7 +5,7 @@ compiler:
 os: linux
 
 before_install:
-  - sudo add-apt-repository "deb mirror://ubuntu.cs.utah.edu/ubuntu/ trusty main restricted universe" # switch to Ubuntu Trusty
+  - sudo add-apt-repository "deb http://ubuntu.cs.utah.edu/ubuntu/ trusty-updates main restricted universe" # switch to Ubuntu Trusty
   - sudo apt-get update -qq
   - sudo apt-get install -qq g++ clang cmake dpkg-dev libbotan1.10-dev libcurl4-openssl-dev libargtable2-dev libmicrohttpd-dev # install dependencies
 
