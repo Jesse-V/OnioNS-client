@@ -9,7 +9,7 @@ language: cpp
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -qq g++ clang cmake dpkg-dev libbotan1.10-dev libcurl4-openssl-dev libargtable2-dev libmicrohttpd-dev # install dependencies
+  - sudo apt-get install -qq g++ clang cmake dh-make dpkg-dev libbotan1.10-dev libcurl4-openssl-dev libargtable2-dev libmicrohttpd-dev # install dependencies
 
 before_script:
   # compile and install OnioNS-common library from source
