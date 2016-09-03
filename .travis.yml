@@ -3,8 +3,6 @@ compiler:
   - gcc
 
 os: linux
-dist: trusty
-sudo: required
 language: cpp
 
 before_install:
