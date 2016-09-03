@@ -13,12 +13,11 @@
 /*
 todo:
   switch to argtable
-  allow custom parameters
+  allow custom command-line parameters
   make localserver use resolver
   connect to mirror at startup
   resolve remotely
   intercept .tor domains
-  update changelog
 */
 
 

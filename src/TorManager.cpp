@@ -5,6 +5,7 @@
 #include <chrono>
 #include <netdb.h>
 #include <sys/wait.h>
+#include <errno.h>
 #include <string.h>
 //#include <unistd.h>
 //#include <stdio.h>
@@ -18,7 +19,13 @@ void TorManager::forkTor(int argc, char* argv[])
     return;
   }
 
-  pid_t torP = startTor(argv);
+  //pid_t torP = startTor(argv);
+  if (startTor(argv) <= 0)
+  {
+    Log::get().warn("Failed to start Tor, will run normal local listener.");
+    return;
+  }
+
   waitForBootstrap();
 
   /*
@@ -29,25 +36,27 @@ void TorManager::forkTor(int argc, char* argv[])
 
   // I learned in college that you have to kill your children before killing
   // yourself
-  kill(torP, SIGTERM);
+  // kill(torP, SIGTERM);
 }
 
 
 
 pid_t TorManager::startTor(char** argv)
 {
-  Log::get().notice("Launching Tor as a child process...");
+  /*
+  temporarily commented out
   argv[0] = const_cast<char*>("TorBrowser/Tor/torbin");
   pid_t torP = startProcess(argv);
-
-  Log::get().notice("Tor started with pid " + std::to_string(torP));
+  if (torP <= 0)
+    return torP;
+  */
 
   // wait for Tor's control port to be available
   while (!isOpen(9151))
   {
     // https://stackoverflow.com/questions/5278582
-    if (waitpid(torP, NULL, WNOHANG) != 0)  // test for existence of Tor
-      exit(0);  // if the Tor Browser was closed, then quit
+    //if (waitpid(torP, NULL, WNOHANG) != 0)  // test for existence of Tor
+    //  exit(0);  // if the Tor Browser was closed, then quit
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
   }
 
@@ -171,23 +180,35 @@ std::string TorManager::getCookiePath()
 // start a child process based on the given commands
 pid_t TorManager::startProcess(char** args)
 {  // http://www.cplusplus.com/forum/lounge/17684/
+ //http://www.thegeekstuff.com/2012/03/c-process-control-functions/
+
+  Log::get().notice("Starting " + std::string(args[0]) + "...");
   pid_t pid = fork();
 
-  switch (pid)
+  if (pid >= 0)
   {
-    case -1:
-      Log::get().warn("Uh-Oh! fork() failed.");
+    if (pid == 0)
+    {
+      auto ret = execve(args[0], args, NULL);
+      Log::get().warn("Failed to execute process. " + std::string(strerror(errno)));
       return -1;
-    case 0:  // child process
-      execvp(args[0], args);
-      Log::get().warn("Failed to execute process!");
-      return -1;
-    default:  // Parent process
-      Log::get().warn("Process \"" + std::string(args[0]) + "\" created, pid " +
-                      std::to_string(pid));
-      // wait(&pid);
-      return pid;
+      //Pid after: " + std::to_string(pid) + "," + std::to_string(ret));
+      //exit(1);
+    }
+    else
+    {
+      int status;
+      Log::get().notice("Child process has pid " + std::to_string(pid));
+      //wait(&status); /* wait for child to exit, and store child's exit status */
+      //Log::get().notice("Child exit code: " + std::to_string(WEXITSTATUS(status)));
+    }
   }
+  else
+  {
+    Log::get().error("fork() failed!");
+  }
+
+return pid;
 }
 
 
