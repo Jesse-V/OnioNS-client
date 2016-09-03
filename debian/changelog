@@ -1,3 +1,13 @@
+tor-onions-client (0.7.0.0~trusty) trusty; urgency=medium
+
+  * Replace Boost Asio networking code with cinemast/libjson-rpc-cpp.
+  * Remove dependency on Python.
+  * Overhaul Tor Browser integration.
+  * When launching from the Tor Browser, only start one child process: torbin.
+  * Align with major changes in onions-common.
+
+ -- Jesse Victors <kernelcorn@torproject.org>  Sat, 03 Sep 2016 13:00:00 -0500
+
 tor-onions-client (0.6.2.0~trusty) trusty; urgency=medium
 
   * Fix premature reporting that Tor has exited.
