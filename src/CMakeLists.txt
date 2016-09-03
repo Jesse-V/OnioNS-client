@@ -49,8 +49,7 @@ else()
 endif()
 
 target_link_libraries(onions-client ${onions-common} ${onions-jsoncpp}
-  ${onions-jsonrpccpp-common} ${onions-jsonrpccpp-server} pthread)
-  # ${onions-cyoencode} botan-1.10
+  ${onions-jsonrpccpp-common} ${onions-jsonrpccpp-server} ${onions-cyoencode} pthread)
 
 #installation of files
 set(ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
