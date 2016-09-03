@@ -3,7 +3,7 @@ Upstream-Name: OnioNS-client
 Source: https://github.com/Jesse-V/OnioNS-client
 
 Files: *
-Copyright: 2015 Jesse Victors <kernelcorn@riseup.net>
+Copyright: 2015 Jesse Victors <kernelcorn@torproject.org>
 License: Modified/New BSD License
  Copyright (c) 2015, Jesse Victors
  All rights reserved.
