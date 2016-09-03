@@ -41,7 +41,9 @@ You can find Debian packages in [Releases section](https://github.com/Jesse-V/On
 > 2. Download and extract the latest release from the [Releases page](https://github.com/Jesse-V/OnioNS-client/releases).
 > 3. **(mkdir build; cd build; cmake ../src; make; sudo make install)**
 
-You can cleanup your build with **rm -rf build**
+You can cleanup your build with **rm -rf build**.
+
+If you use Clang, you can encounter unusual linking errors depending on your GCC and Clang version. If so, try using the same compiler for both onions-common and onions-client to work around https://llvm.org/bugs/show_bug.cgi?id=23529.
 
 ### Initialization
 
@@ -74,12 +76,6 @@ If you are unable to load "example.tor" more than 20 seconds after starting the 
 ### Getting Help
 
 If you have installed the software and then initialized the Tor Browser (again, a one-time operation) the software should work as intended. However, if something went wrong and you need assistance, please contact kernelcorn on #tor-dev on OFTC IRC, or email kernelcorn at torproject dot org (PGP key 0xC20BEC80). If you would like to report a bug or file an enhancement request, please [open a ticket on Github](https://github.com/Jesse-V/OnioNS-client/issues) or contact me over IRC or email if you do not have a Github account.
-
-### Contributing
-
-Please file a Github issue ticket to report a bug or request a feature. Developers should use Clang 3.8 as it will compile faster and provide cleaner error messages. Feel check out the devBuild.sh and scanBuild.sh scripts as they can helpful to you. If you would like to contribute code, please fork this repo, sign your commits, and file a pull request.
-
-I develop using Clang 3.8 on Debian Testing amd64.
 
 ### How to Contribute
 
