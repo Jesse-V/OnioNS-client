@@ -17,7 +17,8 @@ todo:
   make localserver use resolver
   connect to mirror at startup
   resolve remotely
-  intercept .tor domains
+  use multi-threading when intercepting circuits
+  split Tor response per line, drop stuff at the beginning
   make 9151 dynamic
   logging at debug, make this in onions-common
 */

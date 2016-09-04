@@ -28,7 +28,9 @@ bool Socket::create()
   if (!isValid())
     return false;
 
-  return setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, 0, 0) != -1;
+  int on = 1;
+  return setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, (const char*)&on,
+                 sizeof(on)) != -1;
 }
 
 

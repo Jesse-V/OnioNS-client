@@ -1,6 +1,7 @@
 
 #include "sockets/ClientSocket.h"
 #include <string>
+#include <vector>
 #include <unistd.h>
 
 class TorManager
@@ -25,10 +26,13 @@ class TorManager
   void manageTor();
   void waitForBootstrap(ClientSocket&);
   void authenticateToTor(ClientSocket&);
+  void interceptLookups(ClientSocket&);
+  void handleFreshCircuit(const std::string&, const std::string&, ClientSocket&);
   std::string getCookiePath(ClientSocket&);
   std::string getCookieHash(const std::string&);
 
-  // C-level utilities
+  // low-level utilities
+  std::vector<std::string> split(const char*, char c = ' ');
   pid_t startProcess(char**);
   bool isOpen(int);
 };

@@ -72,35 +72,16 @@ pid_t TorManager::startTor(char** argv)
 
 void TorManager::manageTor()
 {
-  ClientSocket clientSocket("127.0.0.1", 9151);
-
-  Log::get().notice("Attempting to authenticate to Tor...");
-  authenticateToTor(clientSocket);
-  Log::get().notice("Waiting for Tor to finish bootstrapping...");
-  waitForBootstrap(clientSocket);
-  Log::get().notice("Tor bootstrap complete.");
-}
-
-
-
-void TorManager::authenticateToTor(ClientSocket& clientSocket)
-{
   try
   {
-    std::string hash = getCookieHash(getCookiePath(clientSocket));
-    Log::get().notice("Read authentication cookie.");
-    clientSocket << "AUTHENTICATE " + hash + "\r\n";
+    ClientSocket socket("127.0.0.1", 9151);
 
-    std::string response;
-    clientSocket >> response;
-
-    if (response == "250 OK\r\n")
-      Log::get().notice("Authentication complete.");
-    else
-    {
-      Log::get().notice("Tor replied: " + response);
-      Log::get().warn("Unexpected answer from Tor!");
-    }
+    Log::get().notice("Attempting to authenticate to Tor...");
+    authenticateToTor(socket);
+    Log::get().notice("Waiting for Tor to finish bootstrapping...");
+    waitForBootstrap(socket);
+    Log::get().notice("Tor bootstrap complete.");
+    interceptLookups(socket);
   }
   catch (SocketException& e)
   {
@@ -111,7 +92,27 @@ void TorManager::authenticateToTor(ClientSocket& clientSocket)
 
 
 
-void TorManager::waitForBootstrap(ClientSocket& clientSocket)
+void TorManager::authenticateToTor(ClientSocket& socket)
+{
+  std::string hash = getCookieHash(getCookiePath(socket));
+  Log::get().notice("Read authentication cookie.");
+  socket << "AUTHENTICATE " + hash + "\r\n";
+
+  std::string response;
+  socket >> response;
+
+  if (response == "250 OK\r\n")
+    Log::get().notice("Authentication complete.");
+  else
+  {
+    Log::get().notice("Tor replied: " + response);
+    Log::get().warn("Unexpected answer from Tor!");
+  }
+}
+
+
+
+void TorManager::waitForBootstrap(ClientSocket& socket)
 {
   std::string response;
   const std::string readyState = "BOOTSTRAP PROGRESS=100";
@@ -119,21 +120,84 @@ void TorManager::waitForBootstrap(ClientSocket& clientSocket)
   while (response.find(readyState) == std::string::npos)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
-    clientSocket << "GETINFO status/bootstrap-phase\r\n";
-    clientSocket >> response;
+    socket << "GETINFO status/bootstrap-phase\r\n";
+    socket >> response;
   }
 }
 
 
 
-std::string TorManager::getCookiePath(ClientSocket& clientSocket)
+void TorManager::interceptLookups(ClientSocket& socket)
+{
+  std::string response;
+  socket << "SETEVENTS stream\r\n";
+  socket >> response;
+  if (response != "250 OK\r\n")
+    Log::get().warn("Couldn't request event notifications.");
+
+  socket << "SETCONF __LeaveStreamsUnattached=1\r\n";
+  socket >> response;
+  if (response != "250 OK\r\n")
+    Log::get().warn(response);
+
+  while (true)
+  {
+    socket >> response;
+    auto words = split(response.c_str());
+    //650 STREAM 360 NEW 0 example.tor:80 SOURCE_ADDR=127.0.0.1:12345 PURPOSE=USER
+
+    if (words[0].size() != 3)
+      continue;
+
+    if (words[0] != "650" && words[0] != "250")
+      Log::get().warn("Unexpected response: \"" + response + "\"");
+
+    // see https://gitweb.torproject.org/torspec.git/tree/control-spec.txt#n1853
+    if (words[1] == "STREAM" && words[3] == "NEW" && words[4] == "0")
+      handleFreshCircuit(words[2], words[5], socket);
+  }
+}
+
+
+
+void TorManager::handleFreshCircuit(const std::string& streamID, const std::string& domain, ClientSocket& socket)
+{
+  if (domain.find(".tor:") == std::string::npos)
+  { // don't care about this stream, so auto-attach
+
+    Log::get().notice("Auto-attaching new stream: \"" + domain + "\"");
+    socket << "ATTACHSTREAM " << streamID << " 0\r\n";
+  }
+  else
+  {
+    Log::get().notice("Found request to \"" + domain + "\"");
+
+    std::string address = "3g2upl4pq6kufc4m.onion";
+    bool resolved = true;
+    if (resolved)
+    {
+      Log::get().notice("Rewriting \"" + domain + "\" to \"" + address + "\"");
+      socket << "REDIRECTSTREAM " << streamID << " " << address << "\r\n"; //todo: handle 443
+      socket << "ATTACHSTREAM " << streamID << " 0\r\n";
+    }
+    else
+    {
+      Log::get().notice("Failed to resolve \"" + domain + "\". Closing stream.");
+      socket << "CLOSESTREAM " << streamID << " 2\r\n";
+    }
+  }
+}
+
+
+
+std::string TorManager::getCookiePath(ClientSocket& socket)
 {
   try
   {
-    clientSocket << "protocolinfo\r\n";
+    socket << "protocolinfo\r\n";
 
     std::string response;
-    clientSocket >> response;
+    socket >> response;
 
     std::string needle = "COOKIEFILE=";
     std::size_t pos = response.find(needle);
@@ -208,6 +272,26 @@ pid_t TorManager::startProcess(char** args)
   }
 
   return pid;
+}
+
+
+
+std::vector<std::string> TorManager::split(const char* str, char c)
+{ //https://stackoverflow.com/questions/53849
+
+    std::vector<std::string> result;
+
+    do
+    {
+        const char* begin = str;
+        while(*str != c && *str)
+            str++;
+
+        result.push_back(std::string(begin, str));
+    }
+    while (0 != *str++);
+
+    return result;
 }
 
 
