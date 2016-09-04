@@ -1,6 +1,6 @@
 
 #include "TorManager.hpp"
-#include "tor/SocketException.h"
+#include "sockets/SocketException.h"
 #include <onions-common/Log.hpp>
 #include <botan/hex_filt.h>
 #include <botan/pipe.h>

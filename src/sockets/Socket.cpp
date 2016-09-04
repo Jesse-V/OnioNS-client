@@ -28,12 +28,7 @@ bool Socket::create()
   if (!isValid())
     return false;
 
-  int on = 1;
-  if (setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, (const char*)&on,
-                 sizeof(on)) == -1)
-    return false;
-
-  return true;
+  return setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, 0, 0) != -1;
 }
 
 
@@ -47,10 +42,8 @@ bool Socket::bind(int port)
   addr_.sin_addr.s_addr = INADDR_ANY;
   addr_.sin_port = htons(port);
 
-  if (::bind(sock_, reinterpret_cast<struct sockaddr*>(&addr_),
-             sizeof(addr_)) == -1)
-    return false;
-  return true;
+  return ::bind(sock_, reinterpret_cast<struct sockaddr*>(&addr_),
+                sizeof(addr_)) != -1;
 }
 
 
@@ -60,9 +53,7 @@ bool Socket::listen() const
   if (!isValid())
     return false;
 
-  if (::listen(sock_, MAXCONNECTIONS) == -1)
-    return false;
-  return true;
+  return ::listen(sock_, MAXCONNECTIONS) != -1;
 }
 
 
@@ -70,8 +61,8 @@ bool Socket::listen() const
 bool Socket::accept(Socket& newSocket) const
 {
   int addrLen = sizeof(addr_);
-  newSocket.sock_ = ::accept(sock_, (sockaddr*)&addr_, (socklen_t*)&addrLen);
-
+  newSocket.sock_ = ::accept(sock_, (sockaddr*)&addr_,
+                             reinterpret_cast<socklen_t*>(&addrLen));
   return newSocket.sock_ > 0;
 }
 
@@ -79,7 +70,7 @@ bool Socket::accept(Socket& newSocket) const
 
 bool Socket::send(const std::string& s) const
 {
-  int status = ::send(sock_, s.c_str(), s.size(), MSG_NOSIGNAL);
+  ssize_t status = ::send(sock_, s.c_str(), s.size(), MSG_NOSIGNAL);
   return status != -1;
 }
 
@@ -91,16 +82,14 @@ int Socket::recv(std::string& s) const
   s = "";
   memset(buf, 0, MAXRECV + 1);
 
-  int status = ::recv(sock_, buf, MAXRECV, 0);
+  ssize_t status = ::recv(sock_, buf, MAXRECV, 0);
 
-  if (status == -1)
-    return 0;
-  else if (status == 0)
+  if (status == 0 || status == -1)
     return 0;
   else
   {
     s = buf;
-    return status;
+    return static_cast<int>(status);
   }
 }
 
