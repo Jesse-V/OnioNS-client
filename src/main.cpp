@@ -18,6 +18,8 @@ todo:
   connect to mirror at startup
   resolve remotely
   intercept .tor domains
+  make 9151 dynamic
+  logging at debug, make this in onions-common
 */
 
 

@@ -1,18 +1,23 @@
 
 #include "TorManager.hpp"
+#include "tor/SocketException.h"
 #include <onions-common/Log.hpp>
+#include <botan/hex_filt.h>
+#include <botan/pipe.h>
 #include <thread>
-#include <chrono>
-#include <netdb.h>
-#include <sys/wait.h>
-#include <errno.h>
-#include <string.h>
+//#include <chrono>
+//#include <netdb.h>
+//#include <sys/wait.h>
+//#include <errno.h>
+//#include <string.h>
 //#include <unistd.h>
 //#include <stdio.h>
 
 
 void TorManager::forkTor(int argc, char* argv[])
 {
+  /*
+  temporarily commented out
   if (argc < 13)  // there are more reliable ways, but this works decently
   {
     Log::get().notice("Tor Browser not detected; won't manage Tor.");
@@ -25,8 +30,9 @@ void TorManager::forkTor(int argc, char* argv[])
     Log::get().warn("Failed to start Tor, will run normal local listener.");
     return;
   }
+  */
 
-  waitForBootstrap();
+  manageTor();
 
   /*
     std::chrono::milliseconds pollTime(250);
@@ -43,19 +49,16 @@ void TorManager::forkTor(int argc, char* argv[])
 
 pid_t TorManager::startTor(char** argv)
 {
-  /*
-  temporarily commented out
   argv[0] = const_cast<char*>("TorBrowser/Tor/torbin");
   pid_t torP = startProcess(argv);
   if (torP <= 0)
     return torP;
-  */
 
   // wait for Tor's control port to be available
   while (!isOpen(9151))
   {
     // https://stackoverflow.com/questions/5278582
-    //if (waitpid(torP, NULL, WNOHANG) != 0)  // test for existence of Tor
+    // if (waitpid(torP, NULL, WNOHANG) != 0)  // test for existence of Tor
     //  exit(0);  // if the Tor Browser was closed, then quit
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
   }
@@ -67,60 +70,87 @@ pid_t TorManager::startTor(char** argv)
 
 
 
-void TorManager::waitForBootstrap()
+void TorManager::manageTor()
 {
+  ClientSocket clientSocket("127.0.0.1", 9151);
+
   Log::get().notice("Attempting to authenticate to Tor...");
-  authenticateToTor();
+  authenticateToTor(clientSocket);
   Log::get().notice("Waiting for Tor to finish bootstrapping...");
-  waitUntilBootstrapped();
+  waitForBootstrap(clientSocket);
   Log::get().notice("Tor bootstrap complete.");
 }
 
 
 
-void TorManager::authenticateToTor()
+void TorManager::authenticateToTor(ClientSocket& clientSocket)
 {
-  /*
-  std::string hash = getCookieHash(getCookiePath(socket));
-  const char* msg = std::string("AUTHENTICATE " + hash + "\r\n\0").c_str();
-
-  boost::asio::write(socket, boost::asio::buffer(std::string(msg)));
-
-  // read from socket until newline
-  boost::asio::streambuf buffer;
-  boost::asio::read_until(socket, buffer, "\n");
-  std::string response = toString(buffer);
-
-  if (response != "250 OK\r\n")
+  try
   {
-    Log::get().notice("Tor replied: " + response);
-    Log::get().warn("Unexpected answer from Tor!");
-    exit(1);
-  }*/
+    std::string hash = getCookieHash(getCookiePath(clientSocket));
+    Log::get().notice("Read authentication cookie.");
+    clientSocket << "AUTHENTICATE " + hash + "\r\n";
+
+    std::string response;
+    clientSocket >> response;
+
+    if (response == "250 OK\r\n")
+      Log::get().notice("Authentication complete.");
+    else
+    {
+      Log::get().notice("Tor replied: " + response);
+      Log::get().warn("Unexpected answer from Tor!");
+    }
+  }
+  catch (SocketException& e)
+  {
+    Log::get().warn("Communication error with Tor's control port! " +
+                    e.description());
+  }
 }
 
 
 
-void TorManager::waitUntilBootstrapped()
+void TorManager::waitForBootstrap(ClientSocket& clientSocket)
 {
-  /*
   std::string response;
   const std::string readyState = "BOOTSTRAP PROGRESS=100";
 
   while (response.find(readyState) == std::string::npos)
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-    // this c-string to std::string is necessary, otherwise the \0 confuses Tor
-    const char* msg = "GETINFO status/bootstrap-phase\r\n\0";
-    boost::asio::write(socket, boost::asio::buffer(std::string(msg)));
-
-    // read from socket until newline
-    boost::asio::streambuf buffer;
-    boost::asio::read_until(socket, buffer, "\n");
-    response = toString(buffer);
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    clientSocket << "GETINFO status/bootstrap-phase\r\n";
+    clientSocket >> response;
   }
-  */
+}
+
+
+
+std::string TorManager::getCookiePath(ClientSocket& clientSocket)
+{
+  try
+  {
+    clientSocket << "protocolinfo\r\n";
+
+    std::string response;
+    clientSocket >> response;
+
+    std::string needle = "COOKIEFILE=";
+    std::size_t pos = response.find(needle);
+    if (pos == std::string::npos)
+      Log::get().error("Unexpected response from Tor!");
+
+    std::size_t pathBegin = pos + needle.size() + 1;
+    std::size_t pathEnd = response.find("\"", pathBegin);
+    return response.substr(pathBegin, pathEnd - pathBegin);
+  }
+  catch (SocketException& e)
+  {
+    Log::get().warn("Could not connect to Tor's control port! " +
+                    e.description());
+  }
+
+  return "";
 }
 
 
@@ -131,48 +161,14 @@ std::string TorManager::getCookieHash(const std::string& path)
   std::fstream authFile(path);
 
   if (!authFile)
-  {
-    Log::get().warn("Unable to open cookie file!");
-    exit(1);
-  }
+    Log::get().error("Unable to open cookie file!");
 
   std::string authBin((std::istreambuf_iterator<char>(authFile)),
                       std::istreambuf_iterator<char>());
 
-  /*
-    Botan::Pipe encode(new Botan::Hex_Encoder);
-    encode.process_msg(authBin);
-    return encode.read_all_as_string(0);
-    */
-  return "";
-}
-
-
-
-std::string TorManager::getCookiePath()
-{
-  /*
-  const char* msg = "protocolinfo\r\n\0";
-  boost::asio::write(socket, boost::asio::buffer(std::string(msg)));
-
-  // read from socket until newline
-  boost::asio::streambuf buffer;
-  boost::asio::read_until(socket, buffer, "\n");
-  std::string response = toString(buffer);
-
-  std::string needle = "COOKIEFILE=";
-  std::size_t pos = response.find(needle);
-  if (pos == std::string::npos)
-  {
-    Log::get().warn("Unexpected response from Tor!");
-    exit(1);
-  }
-
-  std::size_t pathBegin = pos + needle.size() + 1;
-  std::size_t pathEnd = response.find("\"", pathBegin);
-  return response.substr(pathBegin, pathEnd - pathBegin);
-  */
-  return "";
+  Botan::Pipe pipe(new Botan::Hex_Encoder(Botan::Hex_Encoder::Lowercase));
+  pipe.process_msg(authBin);
+  return pipe.read_all_as_string();
 }
 
 
@@ -180,7 +176,7 @@ std::string TorManager::getCookiePath()
 // start a child process based on the given commands
 pid_t TorManager::startProcess(char** args)
 {  // http://www.cplusplus.com/forum/lounge/17684/
- //http://www.thegeekstuff.com/2012/03/c-process-control-functions/
+   // http://www.thegeekstuff.com/2012/03/c-process-control-functions/
 
   Log::get().notice("Starting " + std::string(args[0]) + "...");
   pid_t pid = fork();
@@ -190,17 +186,20 @@ pid_t TorManager::startProcess(char** args)
     if (pid == 0)
     {
       auto ret = execve(args[0], args, NULL);
-      Log::get().warn("Failed to execute process. " + std::string(strerror(errno)));
+      Log::get().warn("Failed to execute process. " +
+                      std::string(strerror(errno)));
       return -1;
-      //Pid after: " + std::to_string(pid) + "," + std::to_string(ret));
-      //exit(1);
+      // Pid after: " + std::to_string(pid) + "," + std::to_string(ret));
+      // exit(1);
     }
     else
     {
       int status;
       Log::get().notice("Child process has pid " + std::to_string(pid));
-      //wait(&status); /* wait for child to exit, and store child's exit status */
-      //Log::get().notice("Child exit code: " + std::to_string(WEXITSTATUS(status)));
+      // wait(&status); /* wait for child to exit, and store child's exit status
+      // */
+      // Log::get().notice("Child exit code: " +
+      // std::to_string(WEXITSTATUS(status)));
     }
   }
   else
@@ -208,7 +207,7 @@ pid_t TorManager::startProcess(char** args)
     Log::get().error("fork() failed!");
   }
 
-return pid;
+  return pid;
 }
 
 

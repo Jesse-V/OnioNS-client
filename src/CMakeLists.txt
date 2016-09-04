@@ -23,6 +23,8 @@ add_executable(onions-client
   TorManager.cpp
   resolver/Resolver.cpp
   resolver/LocalServer.cpp
+  sockets/ClientSocket.cpp
+  sockets/Socket.cpp
 )
 
 # find main onions-common library components
@@ -49,7 +51,7 @@ else()
 endif()
 
 target_link_libraries(onions-client ${onions-common} ${onions-jsoncpp}
-  ${onions-jsonrpccpp-common} ${onions-jsonrpccpp-server} ${onions-cyoencode} pthread)
+  ${onions-jsonrpccpp-common} ${onions-jsonrpccpp-server} ${onions-cyoencode} pthread botan-1.10)
 
 #installation of files
 set(ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets")

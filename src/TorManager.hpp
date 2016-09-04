@@ -1,4 +1,5 @@
 
+#include "tor/ClientSocket.h"
 #include <string>
 #include <unistd.h>
 
@@ -21,11 +22,11 @@ class TorManager
 
   // tor management
   pid_t startTor(char**);
-  void waitForBootstrap();
-  void authenticateToTor();
-  void waitUntilBootstrapped();
+  void manageTor();
+  void waitForBootstrap(ClientSocket&);
+  void authenticateToTor(ClientSocket&);
+  std::string getCookiePath(ClientSocket&);
   std::string getCookieHash(const std::string&);
-  std::string getCookiePath();
 
   // C-level utilities
   pid_t startProcess(char**);
