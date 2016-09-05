@@ -12,35 +12,24 @@
 
 /*
 todo:
+
+main
   switch to argtable
   allow custom command-line parameters
-  make localserver use resolver
-  connect to mirror at startup
-  resolve remotely
+  logging at debug, make this in onions-common
+
+Tor Manager:
   use multi-threading when intercepting circuits
   split Tor response per line, drop stuff at the beginning
   make 9151 dynamic
-  logging at debug, make this in onions-common
+  "bus error" crash
+
+Resolver:
+  connect to mirror at startup
+  resolve remotely
 */
 
-
-void listenForDomains()
-{
-  Log::get().notice("Starting the JSON-RPC server on port 9053...");
-  jsonrpc::HttpServer httpserver(9053);
-  LocalServer s(httpserver);
-  s.StartListening();
-
-  // wait for quit character.
-  // I don't expect for the user to send this, so this is essentially blocking
-  Log::get().notice("Domain resolver online. Listening for domains...");
-  char c = 'c';
-  while (c != 'q')
-    c = getchar();
-
-  Log::get().notice("Shutting down the JSON-RPC server...");
-  s.StopListening();
-}
+void listenForDomains();
 
 int main(int argc, char** argv)
 {
@@ -81,4 +70,23 @@ int main(int argc, char** argv)
 
   Log::get().notice("You are terminated!");
   return EXIT_SUCCESS;
+}
+
+
+void listenForDomains()
+{
+  Log::get().notice("Starting the JSON-RPC server on port 9053...");
+  jsonrpc::HttpServer httpserver(9053);
+  LocalServer s(httpserver);
+  s.StartListening();
+
+  // wait for quit character.
+  // I don't expect for the user to send this, so this is essentially blocking
+  Log::get().notice("Domain resolver online. Listening for domains...");
+  char c = 'c';
+  while (c != 'q')
+    c = getchar();
+
+  Log::get().notice("Shutting down the JSON-RPC server...");
+  s.StopListening();
 }
