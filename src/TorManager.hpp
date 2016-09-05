@@ -1,8 +1,11 @@
 
-#include "sockets/ClientSocket.h"
+#ifndef TOR_MANAGER_HPP
+#define TOR_MANAGER_HPP
+
+#include <onions-common/tor_ipc/ClientSocket.hpp>
 #include <string>
 #include <vector>
-#include <unistd.h>
+#include <memory>
 
 class TorManager
 {
@@ -24,15 +27,15 @@ class TorManager
   // tor management
   pid_t startTor(char**);
   void manageTor();
-  void waitForBootstrap(ClientSocket&);
-  void authenticateToTor(ClientSocket&);
-  void interceptLookups(ClientSocket&);
-  void handleFreshCircuit(const std::string&, const std::string&, ClientSocket&);
-  std::string getCookiePath(ClientSocket&);
-  std::string getCookieHash(const std::string&);
+  void requestStreamEvents(std::shared_ptr<ClientSocket>);
+  void interceptLookups(std::shared_ptr<ClientSocket>);
+  void handleFreshCircuit(const std::string&,
+                          const std::string&,
+                          std::shared_ptr<ClientSocket>);
 
   // low-level utilities
-  std::vector<std::string> split(const char*, char c = ' ');
   pid_t startProcess(char**);
   bool isOpen(int);
 };
+
+#endif

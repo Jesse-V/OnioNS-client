@@ -1,17 +1,12 @@
 
 #include "TorManager.hpp"
-#include "sockets/SocketException.h"
+#include "resolver/Resolver.hpp"
+#include <onions-common/tor_ipc/TorController.hpp>
+#include <onions-common/tor_ipc/SocketException.hpp>
 #include <onions-common/Log.hpp>
-#include <botan/hex_filt.h>
-#include <botan/pipe.h>
+#include <onions-common/Utils.hpp>
 #include <thread>
-//#include <chrono>
-//#include <netdb.h>
-//#include <sys/wait.h>
-//#include <errno.h>
-//#include <string.h>
-//#include <unistd.h>
-//#include <stdio.h>
+#include <string.h>
 
 
 void TorManager::forkTor(int argc, char* argv[])
@@ -74,14 +69,16 @@ void TorManager::manageTor()
 {
   try
   {
-    ClientSocket socket("127.0.0.1", 9151);
+    TorController control("127.0.0.1", 9151);
 
     Log::get().notice("Attempting to authenticate to Tor...");
-    authenticateToTor(socket);
+    control.authenticateToTor();
     Log::get().notice("Waiting for Tor to finish bootstrapping...");
-    waitForBootstrap(socket);
+    control.waitForBootstrap();
     Log::get().notice("Tor bootstrap complete.");
-    interceptLookups(socket);
+    control.setSetting("__LeaveStreamsUnattached", "1");
+    requestStreamEvents(control.getSocket());
+    interceptLookups(control.getSocket());
   }
   catch (SocketException& e)
   {
@@ -92,147 +89,76 @@ void TorManager::manageTor()
 
 
 
-void TorManager::authenticateToTor(ClientSocket& socket)
-{
-  std::string hash = getCookieHash(getCookiePath(socket));
-  Log::get().notice("Read authentication cookie.");
-  socket << "AUTHENTICATE " + hash + "\r\n";
-
-  std::string response;
-  socket >> response;
-
-  if (response == "250 OK\r\n")
-    Log::get().notice("Authentication complete.");
-  else
-  {
-    Log::get().notice("Tor replied: " + response);
-    Log::get().warn("Unexpected answer from Tor!");
-  }
-}
-
-
-
-void TorManager::waitForBootstrap(ClientSocket& socket)
+void TorManager::requestStreamEvents(std::shared_ptr<ClientSocket> socket)
 {
   std::string response;
-  const std::string readyState = "BOOTSTRAP PROGRESS=100";
-
-  while (response.find(readyState) == std::string::npos)
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(250));
-    socket << "GETINFO status/bootstrap-phase\r\n";
-    socket >> response;
-  }
-}
-
-
-
-void TorManager::interceptLookups(ClientSocket& socket)
-{
-  std::string response;
-  socket << "SETEVENTS stream\r\n";
-  socket >> response;
+  *socket << "SETEVENTS stream\r\n";
+  *socket >> response;
   if (response != "250 OK\r\n")
     Log::get().warn("Couldn't request event notifications.");
+}
 
-  socket << "SETCONF __LeaveStreamsUnattached=1\r\n";
-  socket >> response;
-  if (response != "250 OK\r\n")
-    Log::get().warn(response);
 
+
+void TorManager::interceptLookups(std::shared_ptr<ClientSocket> socket)
+{
+  std::string response;
   while (true)
   {
-    socket >> response;
-    auto words = split(response.c_str());
-    //650 STREAM 360 NEW 0 example.tor:80 SOURCE_ADDR=127.0.0.1:12345 PURPOSE=USER
+    *socket >> response;
+    auto lines = Utils::split(response.c_str(), '\r');
+    for (auto line : lines)
+    {
+      auto words = Utils::split(line.c_str());
+      // 650 STREAM 360 NEW 0 example.tor:80 SOURCE_ADDR=127.0.0.1:12345
+      // PURPOSE=USER
 
-    if (words[0].size() != 3)
-      continue;
+      // if it's a fragmented response string or if it's an internal stream
+      if (words[0].size() != 3 || words[5].find(".exit:") != std::string::npos)
+        continue;
 
-    if (words[0] != "650" && words[0] != "250")
-      Log::get().warn("Unexpected response: \"" + response + "\"");
+      if (words[0] != "650" && words[0] != "250")
+        Log::get().warn("Tor issue: \"" + line + "\"");
 
-    // see https://gitweb.torproject.org/torspec.git/tree/control-spec.txt#n1853
-    if (words[1] == "STREAM" && words[3] == "NEW" && words[4] == "0")
-      handleFreshCircuit(words[2], words[5], socket);
+      // see
+      // https://gitweb.torproject.org/torspec.git/tree/control-spec.txt#n1853
+      if (words[1] == "STREAM" && words[3] == "NEW" && words[4] == "0")
+        handleFreshCircuit(words[2], words[5], socket);
+    }
   }
 }
 
 
 
-void TorManager::handleFreshCircuit(const std::string& streamID, const std::string& domain, ClientSocket& socket)
+void TorManager::handleFreshCircuit(const std::string& streamID,
+                                    const std::string& domain,
+                                    std::shared_ptr<ClientSocket> socket)
 {
   if (domain.find(".tor:") == std::string::npos)
-  { // don't care about this stream, so auto-attach
+  {  // don't care about this stream, so auto-attach
 
     Log::get().notice("Auto-attaching new stream: \"" + domain + "\"");
-    socket << "ATTACHSTREAM " << streamID << " 0\r\n";
+    *socket << "ATTACHSTREAM " << streamID << " 0\r\n";
   }
   else
   {
     Log::get().notice("Found request to \"" + domain + "\"");
 
-    std::string address = "3g2upl4pq6kufc4m.onion";
-    bool resolved = true;
-    if (resolved)
+    std::string address = Resolver::get().resolveOnion(domain);
+    if (address.empty())
     {
-      Log::get().notice("Rewriting \"" + domain + "\" to \"" + address + "\"");
-      socket << "REDIRECTSTREAM " << streamID << " " << address << "\r\n"; //todo: handle 443
-      socket << "ATTACHSTREAM " << streamID << " 0\r\n";
+      Log::get().notice("Failed to resolve \"" + domain +
+                        "\". Closing stream.");
+      *socket << "CLOSESTREAM " << streamID << " 2\r\n";
     }
     else
     {
-      Log::get().notice("Failed to resolve \"" + domain + "\". Closing stream.");
-      socket << "CLOSESTREAM " << streamID << " 2\r\n";
+      Log::get().notice("Rewriting \"" + domain + "\" to \"" + address + "\"");
+      *socket << "REDIRECTSTREAM " << streamID << " " << address
+              << "\r\n";  // todo: handle 443
+      *socket << "ATTACHSTREAM " << streamID << " 0\r\n";
     }
   }
-}
-
-
-
-std::string TorManager::getCookiePath(ClientSocket& socket)
-{
-  try
-  {
-    socket << "protocolinfo\r\n";
-
-    std::string response;
-    socket >> response;
-
-    std::string needle = "COOKIEFILE=";
-    std::size_t pos = response.find(needle);
-    if (pos == std::string::npos)
-      Log::get().error("Unexpected response from Tor!");
-
-    std::size_t pathBegin = pos + needle.size() + 1;
-    std::size_t pathEnd = response.find("\"", pathBegin);
-    return response.substr(pathBegin, pathEnd - pathBegin);
-  }
-  catch (SocketException& e)
-  {
-    Log::get().warn("Could not connect to Tor's control port! " +
-                    e.description());
-  }
-
-  return "";
-}
-
-
-
-std::string TorManager::getCookieHash(const std::string& path)
-{
-  // https://stackoverflow.com/questions/2602013/
-  std::fstream authFile(path);
-
-  if (!authFile)
-    Log::get().error("Unable to open cookie file!");
-
-  std::string authBin((std::istreambuf_iterator<char>(authFile)),
-                      std::istreambuf_iterator<char>());
-
-  Botan::Pipe pipe(new Botan::Hex_Encoder(Botan::Hex_Encoder::Lowercase));
-  pipe.process_msg(authBin);
-  return pipe.read_all_as_string();
 }
 
 
@@ -249,7 +175,7 @@ pid_t TorManager::startProcess(char** args)
   {
     if (pid == 0)
     {
-      auto ret = execve(args[0], args, NULL);
+      execve(args[0], args, NULL);
       Log::get().warn("Failed to execute process. " +
                       std::string(strerror(errno)));
       return -1;
@@ -258,7 +184,7 @@ pid_t TorManager::startProcess(char** args)
     }
     else
     {
-      int status;
+      // int status;
       Log::get().notice("Child process has pid " + std::to_string(pid));
       // wait(&status); /* wait for child to exit, and store child's exit status
       // */
@@ -272,26 +198,6 @@ pid_t TorManager::startProcess(char** args)
   }
 
   return pid;
-}
-
-
-
-std::vector<std::string> TorManager::split(const char* str, char c)
-{ //https://stackoverflow.com/questions/53849
-
-    std::vector<std::string> result;
-
-    do
-    {
-        const char* begin = str;
-        while(*str != c && *str)
-            str++;
-
-        result.push_back(std::string(begin, str));
-    }
-    while (0 != *str++);
-
-    return result;
 }
 
 
