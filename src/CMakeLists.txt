@@ -23,9 +23,10 @@ add_executable(onions-client
   TorManager.cpp
   resolver/Resolver.cpp
   resolver/LocalServer.cpp
-  sockets/ClientSocket.cpp
-  sockets/Socket.cpp
 )
+
+FIND_LIBRARY(botan NAMES "botan-1.10" REQUIRED)
+FIND_LIBRARY(argtable2 NAMES "argtable2" REQUIRED)
 
 # find main onions-common library components
 FIND_LIBRARY(onions-common NAMES "onions-common" REQUIRED
