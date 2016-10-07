@@ -5,7 +5,7 @@ OnioNS is a privacy-enhanced, metadata-free, and highly-usable DNS for Tor onion
 
 This is the software implementation of the system described in "The Onion Name System: Tor-Powered Decentralized DNS for Tor Onion Services", which will appear in the 2017.1 issue of the Proceedings on Privacy Enhancing Technologies (PoPETS). It will also be demoed in July 2017 at the 17th PETS Symposium in Minneapolis.
 
-### Repository Details [![Build Status](https://travis-ci.org/Jesse-V/OnioNS-client.svg)](https://travis-ci.org/Jesse-V/OnioNS-client)
+### Repository Details [![Build Status](https://travis-ci.org/Jesse-V/OnioNS-client.svg?branch=json-rpc)](https://travis-ci.org/Jesse-V/OnioNS-client)
 
 This repository provides the client-side functionality and the integration with the Tor Browser.
 
