@@ -65,7 +65,8 @@ int main(int argc, char** argv)
     Log::setLogPath(std::string(logPath));
 */
 
-  TorManager::get().forkTor(argc, argv);
+  TorManager manager("127.0.0.1", 9151);
+  manager.forkTor(argc, argv);
   listenForDomains();
 
   Log::get().notice("You are terminated!");

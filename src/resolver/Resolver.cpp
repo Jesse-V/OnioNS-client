@@ -2,7 +2,6 @@
 #include "Resolver.hpp"
 #include <onions-common/Log.hpp>
 #include <onions-common/api/NetworkClient.h>
-#include <onions-common/tor_ipc/SocketException.hpp>
 #include <onions-common/jsonrpccpp/client/connectors/socks5client.h>
 
 /*
@@ -35,7 +34,7 @@ bool Resolver::connectToNetwork()
     return true;
   }
 
-  try
+  // try
   {
     // todo: finish. We need to try 16 mirrors before failing.
     // use thread with mutexes?
@@ -46,11 +45,11 @@ bool Resolver::connectToNetwork()
         Socks5Client("127.0.0.1", 9150, "http://address.onion"));*/
     isOnline_ = true;
   }
-  catch (SocketException& ex)
+  /*catch (SocketException& ex)
   {
     Log::get().warn("Error connecting to mirror:  " + ex.description());
     return false;
-  }
+  }*/
 
   Log::get().notice("Resolver has connected to the OnioNS network.");
   return true;
@@ -71,12 +70,11 @@ std::string Resolver::resolveDomain(const std::string& name)
   */
 
   std::string address = "3g2upl4pq6kufc4m.onion";
-  if (isOnline_)
+  // if (isOnline_)
   {
-    // Log::get().notice("Resolving \"" + name + "\" remotely...");
-    // todo. Get record, verify proof, cache it, etc
-  }
-  else
+      // Log::get().notice("Resolving \"" + name + "\" remotely...");
+      // todo. Get record, verify proof, cache it, etc
+  }  // else
   {
     // Log::get().warn("Cache miss and not online, failing lookup.");
     // return std::string();

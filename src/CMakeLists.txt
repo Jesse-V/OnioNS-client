@@ -31,12 +31,6 @@ FIND_LIBRARY(argtable2 NAMES "argtable2" REQUIRED)
 # find main onions-common library components
 FIND_LIBRARY(onions-common NAMES "onions-common" REQUIRED
   PATHS ${CMAKE_INSTALL_PREFIX}/lib/onions-common NO_DEFAULT_PATH)
-FIND_LIBRARY(onions-cyoencode NAMES "onions-cyoencode" REQUIRED
-  PATHS ${CMAKE_INSTALL_PREFIX}/lib/onions-common NO_DEFAULT_PATH)
-FIND_LIBRARY(onions-jsoncpp NAMES "onions-jsoncpp" REQUIRED
-  PATHS ${CMAKE_INSTALL_PREFIX}/lib/onions-common NO_DEFAULT_PATH)
-
-# find json-rpc-cpp components
 FIND_LIBRARY(onions-jsonrpccpp-common NAMES "jsonrpccpp-common" REQUIRED
   PATHS ${CMAKE_INSTALL_PREFIX}/lib/onions-common NO_DEFAULT_PATH)
 FIND_LIBRARY(onions-jsonrpccpp-client NAMES "jsonrpccpp-client" REQUIRED
@@ -51,8 +45,7 @@ else()
   message(STATUS "Found JSON-RPC-CPP library at ${onions-jsonrpccpp-client}")
 endif()
 
-target_link_libraries(onions-client ${onions-common} ${onions-jsoncpp}
-  ${onions-jsonrpccpp-common} ${onions-jsonrpccpp-server} ${onions-cyoencode} pthread botan-1.10)
+target_link_libraries(onions-client ${onions-common} ${onions-jsonrpccpp-common} ${onions-jsonrpccpp-server} jsoncpp pthread botan-1.10)
 
 #installation of files
 set(ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
