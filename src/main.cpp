@@ -1,6 +1,5 @@
 
 #include "TorManager.hpp"
-#include "resolver/LocalServer.hpp"
 #include <onions-common/Log.hpp>
 //#include <onions-common/Utils.hpp>
 #include <onions-common/jsonrpccpp/server/connectors/httpserver.h>
@@ -65,15 +64,20 @@ int main(int argc, char** argv)
     Log::setLogPath(std::string(logPath));
 */
 
-  TorManager manager("127.0.0.1", 9151);
-  manager.forkTor(argc, argv);
-  listenForDomains();
+  Log::get().setVerbosity(true);
+
+  std::shared_ptr<Resolver> resolver =
+      std::make_shared<Resolver>("127.0.0.1", 9150);
+
+  TorManager manager("127.0.0.1", 9151, resolver);
+  manager.start(argc, argv);
+  // listenForDomains();
 
   Log::get().notice("You are terminated!");
   return EXIT_SUCCESS;
 }
 
-
+/*
 void listenForDomains()
 {
   Log::get().notice("Starting the JSON-RPC server on port 9053...");
@@ -91,3 +95,4 @@ void listenForDomains()
   Log::get().notice("Shutting down the JSON-RPC server...");
   s.StopListening();
 }
+*/
