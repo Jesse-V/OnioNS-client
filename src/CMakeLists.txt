@@ -21,8 +21,7 @@ add_definitions(-DINSTALL_PREFIX=std::string\("${CMAKE_INSTALL_PREFIX}"\))
 add_executable(onions-client
   main.cpp
   TorManager.cpp
-  resolver/Resolver.cpp
-  resolver/LocalServer.cpp
+  Resolver.cpp
 )
 
 FIND_LIBRARY(botan NAMES "botan-1.10" REQUIRED)
@@ -45,7 +44,7 @@ else()
   message(STATUS "Found JSON-RPC-CPP library at ${onions-jsonrpccpp-client}")
 endif()
 
-target_link_libraries(onions-client ${onions-common} ${onions-jsonrpccpp-common} ${onions-jsonrpccpp-server} jsoncpp pthread botan-1.10)
+target_link_libraries(onions-client ${onions-common} ${onions-jsonrpccpp-common} ${onions-jsonrpccpp-client} ${onions-jsonrpccpp-server} jsoncpp pthread botan-1.10)
 
 #installation of files
 set(ASSETS "${CMAKE_CURRENT_SOURCE_DIR}/assets")
